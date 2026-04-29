@@ -1,4 +1,4 @@
-/* ������������� */
+﻿/* Variables and Rest */
 :root {
     --bg-light: #ffffff;
     --text-light: #000000;
@@ -35,7 +35,7 @@ ul {
     list-style: none;
 }
 
-/* ���ù����� */
+/* Global Styles */
 .fw-bold { font-weight: 800; }
 .text-outline {
     color: transparent;
@@ -65,7 +65,7 @@ ul {
     text-align: center;
 }
 
-/* ������ */
+/* Navbar */
 .navbar {
     padding: 1.5rem 0;
     border-bottom: 1px solid transparent;
@@ -345,3 +345,5 @@ ul {
         gap: 0.5rem;
     }
 }
+
+
