@@ -1,9 +1,12 @@
-// ¼òµ¥½»»¥½Å±¾ (±£ÁôÎªÁËºóÐøÀ©Õ¹)
+// ï¿½òµ¥½ï¿½ï¿½ï¿½ï¿½Å±ï¿½ (ï¿½ï¿½ï¿½ï¿½Îªï¿½Ëºï¿½ï¿½ï¿½ï¿½ï¿½Õ¹)
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
-        });
+        const target = this.getAttribute('href');
+        if (target && target !== '#') {
+            document.querySelector(target).scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
     });
 });
