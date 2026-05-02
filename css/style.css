@@ -34,6 +34,15 @@ body {
     flex-direction: column;
 }
 
+/* Main wraps hero so landmark stays valid; keep vertical fill */
+#main-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+}
+
 a {
     text-decoration: none;
     color: inherit;
@@ -167,7 +176,6 @@ ul {
     margin-bottom: clamp(1rem, 3vw, 2rem);
     word-wrap: break-word;
     overflow-wrap: anywhere;
-    hyphens: auto;
 }
 .hero-desc {
     font-size: clamp(1rem, 2vw, 1.1rem);
@@ -619,7 +627,31 @@ body.anim-in .hero-title .fw-bold {
     background-size: 100% 1px;
 }
 
+/* Keyboard focus — visible ring without changing layout colors */
+.navbar .logo:focus-visible,
+.social-icons a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+}
+
+.footer-flex p a:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 3px;
+}
+
+.resume-btn:focus-visible {
+    outline: 2px solid var(--bg-light);
+    outline-offset: 3px;
+}
+
+.bg-dark .resume-btn:focus-visible {
+    outline-color: #ffffff;
+}
+
 @media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
     body.anim-init .nav-container .logo,
     body.anim-init .resume-btn,
     body.anim-init .hero-title,

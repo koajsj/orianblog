@@ -3,34 +3,48 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     anchor.addEventListener("click", (e) => {
         const href = anchor.getAttribute("href");
         if (!href || href === "#") {
+            e.preventDefault();
             return;
         }
 
         const target = document.querySelector(href);
         if (!target) {
+            e.preventDefault();
             return;
         }
 
         e.preventDefault();
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        const prefersReduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({ behavior: prefersReduce ? "auto" : "smooth", block: "start" });
     });
 });
 
 /* Page entrance + scroll reveal (respects prefers-reduced-motion) */
 (function () {
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    function isReduceMotion() {
+        return motionQuery.matches;
+    }
+
+    function applyReducedMotionState() {
+        document.body.classList.remove("anim-init");
+        document.body.classList.add("anim-in");
+        document.querySelectorAll(".reveal").forEach((el) => {
+            el.classList.add("reveal-in");
+        });
+    }
 
     function startEntrance() {
-        if (reduceMotion) {
-            document.body.classList.remove("anim-init");
-            document.body.classList.add("anim-in");
-            document.querySelectorAll(".reveal").forEach((el) => {
-                el.classList.add("reveal-in");
-            });
+        if (isReduceMotion()) {
+            applyReducedMotionState();
             return;
         }
         requestAnimationFrame(() => {
-            document.body.classList.replace("anim-init", "anim-in");
+            requestAnimationFrame(() => {
+                document.body.classList.remove("anim-init");
+                document.body.classList.add("anim-in");
+            });
         });
     }
 
@@ -46,7 +60,19 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         });
     }
 
-    if (reduceMotion) {
+    function onMotionPreferenceChange() {
+        if (isReduceMotion()) {
+            applyReducedMotionState();
+        }
+    }
+
+    if (typeof motionQuery.addEventListener === "function") {
+        motionQuery.addEventListener("change", onMotionPreferenceChange);
+    } else if (typeof motionQuery.addListener === "function") {
+        motionQuery.addListener(onMotionPreferenceChange);
+    }
+
+    if (isReduceMotion()) {
         return;
     }
 
@@ -60,9 +86,9 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
                     }
                 });
             },
-            { threshold: 0.15 }
+            { threshold: 0.08, rootMargin: "0px 0px 48px 0px" }
         );
-        document.querySelectorAll(".footer.reveal, .reveal").forEach((el) => {
+        document.querySelectorAll(".reveal").forEach((el) => {
             io.observe(el);
         });
     } else {
