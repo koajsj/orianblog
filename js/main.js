@@ -1,4 +1,14 @@
 (() => {
+    "use strict";
+
+    const STAGGER_STEP_MS = 90;
+    const REVEAL_STAGGER_STEP_MS = 70;
+    const PARALLAX_RANGE_X = 14;
+    const PARALLAX_RANGE_Y = 10;
+    const MAGNETIC_STRENGTH = 0.12;
+    const REVEAL_THRESHOLD = 0.08;
+    const REVEAL_ROOT_MARGIN = "0px 0px 48px 0px";
+
     const selectors = {
         anchors: 'a[href^="#"]',
         hero: ".hero",
@@ -22,12 +32,25 @@
     };
 
     const cleanupTasks = [];
+    const motionInteractionCleanups = [];
 
     function registerCleanup(callback) {
         cleanupTasks.push(callback);
     }
 
+    function registerMotionCleanup(callback) {
+        motionInteractionCleanups.push(callback);
+    }
+
+    function teardownMotionInteractions() {
+        while (motionInteractionCleanups.length > 0) {
+            const callback = motionInteractionCleanups.pop();
+            callback();
+        }
+    }
+
     function runCleanup() {
+        teardownMotionInteractions();
         while (cleanupTasks.length > 0) {
             const callback = cleanupTasks.pop();
             callback();
@@ -42,13 +65,56 @@
         return coarsePointerMedia.matches;
     }
 
+    function addMediaQueryChangeListener(media, handler) {
+        if (typeof media.addEventListener === "function") {
+            media.addEventListener("change", handler);
+            registerCleanup(() => media.removeEventListener("change", handler));
+        } else if (typeof media.addListener === "function") {
+            media.addListener(handler);
+            registerCleanup(() => media.removeListener(handler));
+        }
+    }
+
+    function resolveHashTarget(href) {
+        if (!href || href === "#" || !href.startsWith("#")) {
+            return null;
+        }
+
+        const raw = href.slice(1);
+        if (!raw) {
+            return null;
+        }
+
+        let id;
+        try {
+            id = decodeURIComponent(raw);
+        } catch {
+            return null;
+        }
+
+        const byId = document.getElementById(id);
+        if (byId) {
+            return byId;
+        }
+
+        if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+            try {
+                return document.querySelector(`#${CSS.escape(id)}`);
+            } catch {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
     function setRevealDelays() {
         elements.magneticTargets.forEach((target, index) => {
-            target.style.setProperty("--stagger-delay", `${index * 90}ms`);
+            target.style.setProperty("--stagger-delay", `${index * STAGGER_STEP_MS}ms`);
         });
 
         elements.revealTargets.forEach((target, index) => {
-            target.style.setProperty("--reveal-delay", `${index * 70}ms`);
+            target.style.setProperty("--reveal-delay", `${index * REVEAL_STAGGER_STEP_MS}ms`);
         });
     }
 
@@ -56,12 +122,7 @@
         elements.anchors.forEach((anchor) => {
             const onClick = (event) => {
                 const href = anchor.getAttribute("href");
-                if (!href || href === "#") {
-                    event.preventDefault();
-                    return;
-                }
-
-                const target = document.querySelector(href);
+                const target = resolveHashTarget(href);
                 if (!target) {
                     event.preventDefault();
                     return;
@@ -79,28 +140,36 @@
         });
     }
 
+    const pointerListenerOptions = { passive: true };
+
     function bindHeroParallax() {
         if (!elements.hero || !elements.heroContent || isReducedMotion() || isCoarsePointer()) {
             return;
         }
 
+        const hero = elements.hero;
+        const heroContent = elements.heroContent;
+
         const onPointerMove = (event) => {
-            const rect = elements.hero.getBoundingClientRect();
+            const rect = hero.getBoundingClientRect();
             const relativeX = (event.clientX - rect.left) / rect.width - 0.5;
             const relativeY = (event.clientY - rect.top) / rect.height - 0.5;
-            const offsetX = relativeX * 14;
-            const offsetY = relativeY * 10;
-            elements.heroContent.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+            const offsetX = relativeX * PARALLAX_RANGE_X;
+            const offsetY = relativeY * PARALLAX_RANGE_Y;
+            heroContent.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
         };
 
         const onPointerLeave = () => {
-            elements.heroContent.style.transform = "";
+            heroContent.style.transform = "";
         };
 
-        elements.hero.addEventListener("pointermove", onPointerMove);
-        elements.hero.addEventListener("pointerleave", onPointerLeave);
-        registerCleanup(() => elements.hero.removeEventListener("pointermove", onPointerMove));
-        registerCleanup(() => elements.hero.removeEventListener("pointerleave", onPointerLeave));
+        hero.addEventListener("pointermove", onPointerMove, pointerListenerOptions);
+        hero.addEventListener("pointerleave", onPointerLeave, pointerListenerOptions);
+        registerMotionCleanup(() => hero.removeEventListener("pointermove", onPointerMove, pointerListenerOptions));
+        registerMotionCleanup(() => hero.removeEventListener("pointerleave", onPointerLeave, pointerListenerOptions));
+        registerMotionCleanup(() => {
+            heroContent.style.transform = "";
+        });
     }
 
     function bindMagneticTargets() {
@@ -115,22 +184,27 @@
                 const rect = target.getBoundingClientRect();
                 const offsetX = event.clientX - rect.left - rect.width / 2;
                 const offsetY = event.clientY - rect.top - rect.height / 2;
-                target.style.transform = `translate3d(${offsetX * 0.12}px, ${offsetY * 0.12}px, 0)`;
+                target.style.transform = `translate3d(${offsetX * MAGNETIC_STRENGTH}px, ${offsetY * MAGNETIC_STRENGTH}px, 0)`;
             };
 
             const onPointerLeave = () => {
                 target.style.transform = "";
             };
 
-            target.addEventListener("pointermove", onPointerMove);
-            target.addEventListener("pointerleave", onPointerLeave);
-            registerCleanup(() => target.removeEventListener("pointermove", onPointerMove));
-            registerCleanup(() => target.removeEventListener("pointerleave", onPointerLeave));
-            registerCleanup(() => {
+            target.addEventListener("pointermove", onPointerMove, pointerListenerOptions);
+            target.addEventListener("pointerleave", onPointerLeave, pointerListenerOptions);
+            registerMotionCleanup(() => target.removeEventListener("pointermove", onPointerMove, pointerListenerOptions));
+            registerMotionCleanup(() => target.removeEventListener("pointerleave", onPointerLeave, pointerListenerOptions));
+            registerMotionCleanup(() => {
                 target.classList.remove("magnetic-hover");
                 target.style.transform = "";
             });
         });
+    }
+
+    function setupMotionInteractions() {
+        bindHeroParallax();
+        bindMagneticTargets();
     }
 
     function revealAll() {
@@ -161,7 +235,7 @@
                     observer.unobserve(entry.target);
                 });
             },
-            { threshold: 0.08, rootMargin: "0px 0px 48px 0px" }
+            { threshold: REVEAL_THRESHOLD, rootMargin: REVEAL_ROOT_MARGIN }
         );
 
         elements.revealTargets.forEach((target) => {
@@ -199,32 +273,29 @@
 
     function bindMediaListeners() {
         const onMotionChange = () => {
+            teardownMotionInteractions();
             if (isReducedMotion()) {
                 applyReducedMotionState();
             }
+            setupMotionInteractions();
             syncMotionMode();
         };
 
-        const onPageHide = () => {
-            runCleanup();
+        const onCoarsePointerChange = () => {
+            teardownMotionInteractions();
+            setupMotionInteractions();
         };
 
-        if (typeof motionMedia.addEventListener === "function") {
-            motionMedia.addEventListener("change", onMotionChange);
-            registerCleanup(() => motionMedia.removeEventListener("change", onMotionChange));
-        } else if (typeof motionMedia.addListener === "function") {
-            motionMedia.addListener(onMotionChange);
-            registerCleanup(() => motionMedia.removeListener(onMotionChange));
-        }
+        addMediaQueryChangeListener(motionMedia, onMotionChange);
+        addMediaQueryChangeListener(coarsePointerMedia, onCoarsePointerChange);
 
-        window.addEventListener("pagehide", onPageHide, { once: true });
+        window.addEventListener("pagehide", runCleanup, { once: true });
     }
 
     function init() {
         setRevealDelays();
         bindAnchorScrolling();
-        bindHeroParallax();
-        bindMagneticTargets();
+        setupMotionInteractions();
         bindRevealObserver();
         bindMediaListeners();
         syncMotionMode();
