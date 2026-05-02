@@ -12,7 +12,7 @@
             body.anim-init .nav-container .logo,
             body.anim-init .resume-btn,
             body.anim-init .hero-title,
-            body.anim-init .hero-desc,
+            body.anim-init .hero-line-inner,
             body.anim-init .social-icons a {
                 opacity: 1 !important;
                 transform: none !important;
@@ -29,49 +29,44 @@
     </noscript>
 </head>
 <body data-theme="light" class="anim-init">
-    <!-- Navigation -->
-    <nav class="navbar" aria-label="主导航">
+    <nav class="navbar" aria-label="Main navigation">
         <div class="nav-container">
             <a href="index.html" class="logo">
-                <i class="fas fa-code" aria-hidden="true"></i> Orian
+                <i class="fas fa-code" aria-hidden="true"></i> Orian's Blog
             </a>
             <ul class="nav-links">
                 <li>
-                    <button type="button" class="resume-btn">Resume <i class="fas fa-download" aria-hidden="true"></i></button>
+                    <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="Open the site repository on GitHub">GitHub <i class="fab fa-github" aria-hidden="true"></i></a>
                 </li>
             </ul>
         </div>
     </nav>
 
     <main id="main-content">
-        <!-- Hero Section -->
         <header class="hero">
             <div class="hero-container">
                 <div class="hero-content">
-                    <h1 class="hero-title">
-                        Hello I'm <span class="fw-bold">Orian.</span>
+                    <h1 class="hero-title" aria-label="Hello I'm Orian.">
+                        <span class="hero-line">
+                            <span class="hero-line-inner">Hello</span>
+                        </span>
+                        <span class="hero-line">
+                            <span class="hero-line-inner">I'm <span class="fw-bold">Orian.</span></span>
+                        </span>
                     </h1>
-                    <p class="hero-desc">
-                        I'm Orian.
-                    </p>
                     <div class="social-icons">
-                        <a href="#" aria-label="Facebook（即将推出）"><i class="fab fa-facebook" aria-hidden="true"></i></a>
-                        <a href="#" aria-label="Reddit（即将推出）"><i class="fab fa-reddit" aria-hidden="true"></i></a>
-                        <a href="#" aria-label="Twitter / X（即将推出）"><i class="fab fa-twitter" aria-hidden="true"></i></a>
-                        <a href="#" aria-label="Discord（即将推出）"><i class="fab fa-discord" aria-hidden="true"></i></a>
+                        <a href="#" aria-label="Telegram coming soon"><i class="fab fa-telegram" aria-hidden="true"></i></a>
                     </div>
                 </div>
             </div>
         </header>
     </main>
 
-    <!-- Footer -->
     <footer class="footer bg-dark text-white reveal">
         <div class="section-container footer-flex">
-            <div class="logo"><i class="fas fa-code" aria-hidden="true"></i> Orian</div>
+            <div class="logo"><i class="fas fa-code" aria-hidden="true"></i> Orian's Blog</div>
             <div>
-                <p>&copy; 2026 Orian's Blog. All rights reserved.
-                </p>
+                <p>&copy; 2026 Orian's Blog. All rights reserved.</p>
                 <p>Designed by <a href="#">Orian</a></p>
             </div>
         </div>
@@ -80,8 +75,3 @@
     <script src="js/main.js" defer></script>
 </body>
 </html>
-
-
-
-
-

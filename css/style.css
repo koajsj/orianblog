@@ -1,4 +1,4 @@
-/* Variables and Rest */
+/* Variables and reset */
 :root {
     --bg-light: #ffffff;
     --text-light: #000000;
@@ -7,6 +7,8 @@
     --border-color: #000000;
     --primary: #000000;
     --transition: all 0.3s ease;
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-spring-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 * {
@@ -25,6 +27,9 @@ body {
     font-family: 'Sora', sans-serif;
     color: var(--text-light);
     background-color: var(--bg-light);
+    background-image:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0)),
+        radial-gradient(circle at top, rgba(0, 0, 0, 0.045), rgba(255, 255, 255, 0) 48%);
     line-height: 1.6;
     min-height: 100%;
     min-height: 100dvh;
@@ -119,21 +124,40 @@ ul {
 .nav-links a:hover {
     text-decoration: underline;
 }
+
+.nav-links a.resume-btn:hover {
+    text-decoration: none;
+}
 .resume-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
     background-color: var(--primary);
     color: var(--bg-light);
     border: 2px solid var(--primary);
     padding: clamp(0.55rem, 2vw, 0.8rem) clamp(1rem, 3vw, 1.5rem);
     font-size: clamp(0.875rem, 2vw, 1rem);
     font-weight: 600;
+    font-family: inherit;
+    line-height: 1.2;
     cursor: pointer;
     border-radius: 4px;
-    transition: var(--transition);
+    transition: transform 0.25s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     white-space: nowrap;
+    text-decoration: none;
 }
 .resume-btn:hover {
     background-color: var(--bg-light);
     color: var(--primary);
+    transform: scale(1.04);
+}
+.resume-btn:hover i {
+    transform: translateY(2px);
+}
+.resume-btn i {
+    display: inline-block;
+    transition: transform 0.25s ease;
 }
 .resume-btn.text-white {
     border-color: #ffffff;
@@ -152,6 +176,41 @@ ul {
     justify-content: center;
     padding: clamp(2rem, 6vw, 5rem) 0;
     min-height: 0;
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: min(80vw, 700px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 40% 40%, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.02) 52%, rgba(0, 0, 0, 0) 72%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(3px);
+    animation: ambientFloat 10s ease-in-out infinite;
+    z-index: -1;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    width: min(44vw, 360px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 58% 35%, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0) 70%);
+    top: 24%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+    filter: blur(4px);
+    animation: ambientFloatAlt 14s ease-in-out infinite;
+    z-index: -1;
 }
 .hero-container {
     width: 100%;
@@ -168,21 +227,25 @@ ul {
 .hero-content {
     width: 100%;
     max-width: 100%;
+    transition: transform 0.22s ease-out;
 }
 .hero-title {
     font-size: clamp(2rem, 5vw + 1rem, 4rem);
     font-weight: 300;
     line-height: 1.1;
     margin-bottom: clamp(1rem, 3vw, 2rem);
-    word-wrap: break-word;
     overflow-wrap: anywhere;
+    text-wrap: balance;
+    display: inline-grid;
+    gap: 0.08em;
 }
-.hero-desc {
-    font-size: clamp(1rem, 2vw, 1.1rem);
-    margin: 0 auto clamp(1.25rem, 3vw, 2rem);
-    color: #555;
-    max-width: min(100%, 38rem);
-    padding: 0 clamp(0.25rem, 2vw, 0);
+.hero-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.08em;
+}
+.hero-line-inner {
+    display: inline-block;
 }
 .social-icons {
     display: flex;
@@ -202,7 +265,7 @@ ul {
     border: 2px solid var(--border-color);
     border-radius: 4px;
     font-size: 1.5rem;
-    transition: var(--transition);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 .social-icons a:hover {
     background-color: var(--bg-dark);
@@ -378,7 +441,6 @@ ul {
 /* Responsive */
 @media (max-width: 768px) {
     .contact-grid {
-        flex-direction: column;
         grid-template-columns: 1fr;
         text-align: center;
     }
@@ -425,7 +487,7 @@ ul {
     }
 }
 
-/* Animations — page entrance, text highlight, hovers, scroll reveal */
+/* Animations: page entrance, text highlight, hovers, scroll reveal */
 @keyframes fadeSlideFromLeft {
     from {
         opacity: 0;
@@ -496,7 +558,45 @@ ul {
     }
 }
 
-/* Orian name highlight — base + ink sweep after title enters */
+@keyframes ambientFloat {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-49%, -51%) scale(1.06);
+    }
+}
+
+@keyframes ambientFloatAlt {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-47%, -53%) scale(1.08);
+    }
+}
+
+@keyframes titleBreath {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes lineReveal {
+    from {
+        opacity: 0;
+        transform: translateY(115%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Orian name highlight: base plus ink sweep after title enters */
 .hero-title .fw-bold {
     display: inline;
     background-image: linear-gradient(var(--primary), var(--primary));
@@ -522,9 +622,9 @@ body.anim-init .hero-title {
     transform: translateY(20px);
 }
 
-body.anim-init .hero-desc {
+body.anim-init .hero-line-inner {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(115%);
 }
 
 body.anim-init .social-icons a {
@@ -544,24 +644,22 @@ body.anim-in .hero-title {
     animation: fadeUp 0.9s ease-out 0.24s forwards;
 }
 
-body.anim-in .hero-desc {
-    animation: fadeUp 0.75s ease-out 0.48s forwards;
+body.anim-in .hero-title.is-breathing {
+    animation:
+        fadeUp 0.9s ease-out 0.24s forwards,
+        titleBreath 4.6s ease-in-out 1.4s infinite;
 }
 
-body.anim-in .social-icons a:nth-child(1) {
-    animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.62s forwards;
+body.anim-in .hero-line:nth-child(1) .hero-line-inner {
+    animation: lineReveal 0.8s var(--ease-out-quint) 0.34s forwards;
 }
 
-body.anim-in .social-icons a:nth-child(2) {
-    animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s forwards;
+body.anim-in .hero-line:nth-child(2) .hero-line-inner {
+    animation: lineReveal 0.84s var(--ease-out-quint) 0.5s forwards;
 }
 
-body.anim-in .social-icons a:nth-child(3) {
-    animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.78s forwards;
-}
-
-body.anim-in .social-icons a:nth-child(4) {
-    animation: popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.86s forwards;
+body.anim-in .social-icons a {
+    animation: popIn 0.5s var(--ease-spring-soft) calc(0.42s + var(--stagger-delay, 0ms)) forwards;
 }
 
 body.anim-in .hero-title .fw-bold {
@@ -575,34 +673,22 @@ body.anim-in .hero-title .fw-bold {
 }
 
 .reveal.reveal-in {
-    animation: revealFadeUp 0.8s ease-out forwards;
+    animation: revealFadeUp 0.72s var(--ease-out-quint) var(--reveal-delay, 0ms) forwards;
 }
 
 /* Hover micro-interactions */
-.social-icons a {
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
 .social-icons a:hover {
     transform: translateY(-4px) rotate(-6deg);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-.resume-btn {
-    transition: transform 0.25s ease, background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+.magnetic-hover {
+    transition: transform 0.18s ease-out;
 }
 
-.resume-btn:hover {
-    transform: scale(1.04);
-}
-
-.resume-btn:hover i {
-    transform: translateY(2px);
-}
-
-.resume-btn i {
-    display: inline-block;
-    transition: transform 0.25s ease;
+.social-icons a:active,
+.resume-btn:active {
+    transform: scale(0.96);
 }
 
 .logo i {
@@ -612,6 +698,15 @@ body.anim-in .hero-title .fw-bold {
 
 .navbar .logo:hover i {
     transform: rotate(360deg);
+}
+
+/* Hint compositor for smoother transform/opacity animations */
+.hero-title,
+.social-icons a,
+.reveal,
+.resume-btn,
+.navbar .logo {
+    will-change: transform, opacity;
 }
 
 .footer-flex p a {
@@ -627,7 +722,7 @@ body.anim-in .hero-title .fw-bold {
     background-size: 100% 1px;
 }
 
-/* Keyboard focus — visible ring without changing layout colors */
+/* Keyboard focus: visible ring without changing layout colors */
 .navbar .logo:focus-visible,
 .social-icons a:focus-visible {
     outline: 2px solid var(--primary);
@@ -655,7 +750,7 @@ body.anim-in .hero-title .fw-bold {
     body.anim-init .nav-container .logo,
     body.anim-init .resume-btn,
     body.anim-init .hero-title,
-    body.anim-init .hero-desc,
+    body.anim-init .hero-line-inner,
     body.anim-init .social-icons a {
         opacity: 1;
         transform: none;
@@ -664,7 +759,7 @@ body.anim-in .hero-title .fw-bold {
     body.anim-in .nav-container .logo,
     body.anim-in .resume-btn,
     body.anim-in .hero-title,
-    body.anim-in .hero-desc,
+    body.anim-in .hero-line-inner,
     body.anim-in .social-icons a,
     body.anim-in .hero-title .fw-bold {
         animation: none;
@@ -693,8 +788,44 @@ body.anim-in .hero-title .fw-bold {
         transform: none;
     }
 
+    .hero::before {
+        animation: none;
+    }
+
+    .hero::after {
+        animation: none;
+    }
+
+    .hero-content,
+    .magnetic-hover {
+        transition: none;
+        transform: none !important;
+    }
+
     .footer-flex p a {
         background-size: 100% 1px;
         transition: none;
     }
+
+    .hero-title,
+    .social-icons a,
+    .reveal,
+    .resume-btn,
+    .navbar .logo {
+        will-change: auto;
+    }
 }
+
+/* Touch-first tuning: no hover dependency, keep subtle autonomous motion */
+@media (hover: none) and (pointer: coarse) {
+    .social-icons a:hover,
+    .resume-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .hero-content {
+        animation: titleBreath 5.2s ease-in-out 1.2s infinite;
+    }
+}
+
