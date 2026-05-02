@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -7,8 +7,28 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <noscript>
+        <style>
+            body.anim-init .nav-container .logo,
+            body.anim-init .resume-btn,
+            body.anim-init .hero-title,
+            body.anim-init .hero-desc,
+            body.anim-init .social-icons a {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+            body.anim-init .hero-title .fw-bold {
+                animation: none !important;
+                background-size: 100% 2px !important;
+            }
+            .reveal:not(.reveal-in) {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+        </style>
+    </noscript>
 </head>
-<body data-theme="light">
+<body data-theme="light" class="anim-init">
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -44,13 +64,13 @@
     </header>
 
     <!-- Footer -->
-    <footer class="footer bg-dark text-white">
+    <footer class="footer bg-dark text-white reveal">
         <div class="section-container footer-flex">
             <div class="logo"><i class="fas fa-code"></i> Orian</div>
             <div>
                 <p>&copy; 2026 Orian's Blog. All rights reserved.
                 </p>
-                <p>Designed by <a href="#" style="text-decoration: underline;">Orian</a></p>
+                <p>Designed by <a href="#">Orian</a></p>
             </div>
         </div>
     </footer>
