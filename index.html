@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="Orian 的个人博客 — 设计与开发笔记。">
+    <meta name="description" content="Orian's personal blog for motion notes and frontend writing.">
     <title>Orian's Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,16 +32,23 @@
     </noscript>
 </head>
 <body class="anim-init">
-    <nav class="navbar" aria-label="主导航">
+    <nav class="navbar" aria-label="Main navigation">
         <div class="nav-container">
             <a href="index.html" class="logo">
                 <i class="fas fa-code" aria-hidden="true"></i> Orian's Blog
             </a>
             <ul class="nav-links">
                 <li>
-                    <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 上打开本站仓库">GitHub <i class="fab fa-github" aria-hidden="true"></i></a>
+                    <a href="articles.html">Articles</a>
                 </li>
             </ul>
+            <div class="nav-actions">
+                <ul class="nav-links nav-links-actions">
+                <li>
+                    <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="Open the site repository on GitHub">GitHub <i class="fab fa-github" aria-hidden="true"></i></a>
+                </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -49,7 +56,7 @@
         <header class="hero">
             <div class="hero-container">
                 <div class="hero-content">
-                    <h1 class="hero-title">
+                    <h1 class="hero-title" aria-label="Hello I'm Orian.">
                         <span class="hero-line">
                             <span class="hero-line-inner">Hello</span>
                         </span>
@@ -59,12 +66,22 @@
                     </h1>
                     <ul class="social-icons">
                         <li>
-                            <a href="#" aria-label="Telegram 即将推出"><i class="fab fa-telegram" aria-hidden="true"></i></a>
+                            <a href="#" aria-label="Telegram coming soon"><i class="fab fa-telegram" aria-hidden="true"></i></a>
                         </li>
                     </ul>
                 </div>
             </div>
         </header>
+
+        <section id="articles" class="articles-section reveal" aria-labelledby="articles-title">
+            <div class="section-container">
+                <div class="section-heading">
+                    <p class="section-kicker section-kicker-strong">ARTICLES</p>
+                    <h2 id="articles-title" class="section-title">Latest writing.</h2>
+                </div>
+                <div class="articles-grid" data-articles-list></div>
+            </div>
+        </section>
     </main>
 
     <footer class="footer bg-dark text-white reveal">
@@ -77,6 +94,8 @@
         </div>
     </footer>
 
+    <script src="js/articles-data.js" defer></script>
+    <script src="js/articles-home.js" defer></script>
     <script src="js/main.js" defer></script>
 </body>
 </html>

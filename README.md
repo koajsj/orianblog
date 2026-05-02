@@ -1,48 +1,44 @@
 # Orian's Blog
 
-Orian 的个人博客静态站点（设计与开发笔记）。本仓库使用 **原生 HTML / CSS / JavaScript** 构建，可直接通过浏览器打开或部署到 GitHub Pages。
+Static blog built with plain HTML, CSS, and JavaScript.
 
-## 预览
-- 本地预览：直接打开 `index.html`
-- 线上部署：推荐使用 GitHub Pages（见下文）
+## Files
+- `index.html`: homepage
+- `article.html`: article detail page
+- `css/style.css`: shared styles
+- `js/main.js`: motion and interaction
+- `js/articles-data.js`: all article content
+- `js/articles-home.js`: homepage article cards
+- `js/article-page.js`: article detail rendering
 
-## 项目结构
-- `index.html`：主页
-- `css/style.css`：站点样式
-- `js/main.js`：交互脚本
+## How to add a new article
+Edit `js/articles-data.js` and append one object:
 
-## 本地运行
-本项目不依赖 Node.js / npm。
-
-### 方式 1：直接打开
-双击打开 `index.html` 即可。
-
-### 方式 2：使用本地静态服务器（推荐）
-避免部分浏览器对本地文件（file://）的限制。
-
-```bash
-# Python 3
-python -m http.server 3000
-
-# 或 Node.js（可选）
-npx serve .
+```js
+{
+    slug: "your-slug",
+    title: "Your title",
+    date: "2026-05-02",
+    excerpt: "Short summary shown on the homepage.",
+    content: [
+        "First paragraph.",
+        "Second paragraph."
+    ]
+}
 ```
 
-然后访问：`http://localhost:3000`
+Rules:
+- `slug` must be unique
+- `date` should use `YYYY-MM-DD`
+- each string inside `content` becomes one paragraph
 
-## 部署到 GitHub Pages
-1. 进入仓库 **Settings** → **Pages**
-2. **Build and deployment** 选择：
-   - Source: **Deploy from a branch**
-   - Branch: `main` / `(root)`
-3. 保存后等待部署完成，即可通过 Pages 提供的地址访问。
+After saving, the homepage list and article page update automatically.
 
-## 技术栈
-- HTML5
-- CSS3
-- JavaScript
-- Font Awesome（CDN）
-- Google Fonts（Sora）
+## Faster option
+Use the helper script to append a new article stub:
 
-## License
-当前仓库未包含许可证文件（如需开源协议，请添加 `LICENSE` 并在此处更新说明）。
+```powershell
+.\new-article.ps1 -Title "My New Article"
+```
+
+Then edit the new object inside `js/articles-data.js`.

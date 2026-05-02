@@ -33,6 +33,7 @@
 
     const cleanupTasks = [];
     const motionInteractionCleanups = [];
+    let revealObserver = null;
 
     const scrollListenerOptions = { passive: true };
     let scrollRafScheduled = false;
@@ -53,8 +54,16 @@
         }
     }
 
+    function teardownRevealObserver() {
+        if (revealObserver) {
+            revealObserver.disconnect();
+            revealObserver = null;
+        }
+    }
+
     function runCleanup() {
         teardownMotionInteractions();
+        teardownRevealObserver();
         while (cleanupTasks.length > 0) {
             const callback = cleanupTasks.pop();
             callback();
@@ -257,6 +266,8 @@
     }
 
     function bindRevealObserver() {
+        teardownRevealObserver();
+
         if (isReducedMotion()) {
             revealAll();
             return;
@@ -267,7 +278,7 @@
             return;
         }
 
-        const observer = new IntersectionObserver(
+        revealObserver = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
                     if (!entry.isIntersecting) {
@@ -275,17 +286,15 @@
                     }
 
                     entry.target.classList.add("reveal-in");
-                    observer.unobserve(entry.target);
+                    revealObserver.unobserve(entry.target);
                 });
             },
             { threshold: REVEAL_THRESHOLD, rootMargin: REVEAL_ROOT_MARGIN }
         );
 
         elements.revealTargets.forEach((target) => {
-            observer.observe(target);
+            revealObserver.observe(target);
         });
-
-        registerCleanup(() => observer.disconnect());
     }
 
     function applyReducedMotionState() {
@@ -321,6 +330,7 @@
             if (isReducedMotion()) {
                 applyReducedMotionState();
             }
+            bindRevealObserver();
             setupMotionInteractions();
             bindScrollSoft();
             syncMotionMode();
