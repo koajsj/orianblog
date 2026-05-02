@@ -6,8 +6,8 @@
     const PARALLAX_RANGE_X = 14;
     const PARALLAX_RANGE_Y = 10;
     const MAGNETIC_STRENGTH = 0.12;
-    const REVEAL_THRESHOLD = 0.08;
-    const REVEAL_ROOT_MARGIN = "0px 0px 48px 0px";
+    const REVEAL_THRESHOLD = 0.03;
+    const REVEAL_ROOT_MARGIN = "0px 0px 18% 0px";
 
     const selectors = {
         anchors: 'a[href^="#"]',
@@ -33,6 +33,10 @@
 
     const cleanupTasks = [];
     const motionInteractionCleanups = [];
+
+    const scrollListenerOptions = { passive: true };
+    let scrollRafScheduled = false;
+    let scrollHandler = null;
 
     function registerCleanup(callback) {
         cleanupTasks.push(callback);
@@ -207,6 +211,45 @@
         bindMagneticTargets();
     }
 
+    function teardownScrollSoft() {
+        if (scrollHandler) {
+            window.removeEventListener("scroll", scrollHandler, scrollListenerOptions);
+            scrollHandler = null;
+        }
+        scrollRafScheduled = false;
+        elements.body.classList.remove("is-scrolled");
+        if (elements.hero) {
+            elements.hero.style.removeProperty("--scroll-lift");
+        }
+    }
+
+    function bindScrollSoft() {
+        teardownScrollSoft();
+        if (isReducedMotion()) {
+            return;
+        }
+
+        scrollHandler = () => {
+            if (scrollRafScheduled) {
+                return;
+            }
+            scrollRafScheduled = true;
+            requestAnimationFrame(() => {
+                scrollRafScheduled = false;
+                const y = window.scrollY || document.documentElement.scrollTop;
+                elements.body.classList.toggle("is-scrolled", y > 6);
+                if (elements.hero) {
+                    const cap = isCoarsePointer() ? 6 : 9;
+                    const lift = -Math.min(y * 0.013, cap);
+                    elements.hero.style.setProperty("--scroll-lift", `${lift}px`);
+                }
+            });
+        };
+
+        window.addEventListener("scroll", scrollHandler, scrollListenerOptions);
+        scrollHandler();
+    }
+
     function revealAll() {
         elements.revealTargets.forEach((target) => {
             target.classList.add("reveal-in");
@@ -274,16 +317,20 @@
     function bindMediaListeners() {
         const onMotionChange = () => {
             teardownMotionInteractions();
+            teardownScrollSoft();
             if (isReducedMotion()) {
                 applyReducedMotionState();
             }
             setupMotionInteractions();
+            bindScrollSoft();
             syncMotionMode();
         };
 
         const onCoarsePointerChange = () => {
             teardownMotionInteractions();
+            teardownScrollSoft();
             setupMotionInteractions();
+            bindScrollSoft();
         };
 
         addMediaQueryChangeListener(motionMedia, onMotionChange);
@@ -297,6 +344,8 @@
         bindAnchorScrolling();
         setupMotionInteractions();
         bindRevealObserver();
+        registerCleanup(teardownScrollSoft);
+        bindScrollSoft();
         bindMediaListeners();
         syncMotionMode();
         startEntranceAnimation();
