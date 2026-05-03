@@ -43,13 +43,15 @@
         const paragraphs = Array.isArray(article.content) && article.content.length > 0
             ? article.content
             : ["This article is not available yet."];
-        const content = renderArticleContent(paragraphs);
+        const { html: content, tocItems, wordCount } = renderArticleContent(paragraphs);
+        const readingMinutes = Math.max(1, Math.round(wordCount / 220));
         const stats = utils.getArticleStats?.(article.slug) ?? { views: article.views || 0, likes: 0, bookmarked: false };
+        const adjacent = getAdjacentArticles(article.slug);
 
         root.innerHTML = `
             <div class="section-container article-layout">
                 <header class="article-header reveal">
-                    <p class="article-meta">${formatDate(article.date)} · <span data-views-count>${stats.views || 0}</span> views</p>
+                    <p class="article-meta">${formatDate(article.date)} · <span data-views-count>${stats.views || 0}</span> views · ${readingMinutes} min read</p>
                     <h1 class="article-page-title">${utils.escapeHtml?.(article.title) ?? article.title}</h1>
                     <p class="article-excerpt">${utils.escapeHtml?.(article.excerpt) ?? article.excerpt}</p>
                     <div class="article-actions" data-article-actions>
@@ -63,9 +65,11 @@
                         </button>
                     </div>
                 </header>
+                ${renderToc(tocItems)}
                 <article class="article-body reveal">
                     ${content}
                 </article>
+                ${renderAdjacentLinks(adjacent)}
                 <section class="article-comments reveal" data-comment-shell>
                     <h2>Comments</h2>
                     <form class="comment-form" data-comment-form>
@@ -77,19 +81,40 @@
                 </section>
             </div>
         `;
+
+        updateArticleSeo(article, readingMinutes);
     }
 
     function renderArticleContent(paragraphs) {
         const escape = (value) => utils.escapeHtml?.(value) ?? String(value ?? "");
         const chunks = [];
+        const tocItems = [];
         let codeBuffer = [];
         let inCode = false;
+        let headingIndex = 0;
+        let wordCount = 0;
+
+        const slugify = (value) => String(value ?? "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "") || "section";
+
+        const pushHeading = (level, text) => {
+            headingIndex += 1;
+            const id = `section-${slugify(text)}-${headingIndex}`;
+            tocItems.push({ id, text, level });
+            chunks.push(`<h${level} id="${id}">${escape(text)}</h${level}>`);
+        };
 
         const flushCode = () => {
             if (codeBuffer.length === 0) {
                 return;
             }
-            const codeValue = escape(codeBuffer.join("\n"));
+
+            const codeValue = highlightCode(codeBuffer.join("\n"), escape);
             chunks.push(`
                 <div class="article-code">
                     <button type="button" class="article-code-copy" data-code-copy>Copy</button>
@@ -100,7 +125,9 @@
         };
 
         paragraphs.forEach((paragraph) => {
-            if (paragraph.trim() === "```") {
+            const trimmed = paragraph.trim();
+
+            if (trimmed === "```") {
                 if (inCode) {
                     flushCode();
                 }
@@ -113,11 +140,147 @@
                 return;
             }
 
+            if (trimmed.startsWith("### ")) {
+                pushHeading(3, trimmed.replace(/^###\s+/, ""));
+                return;
+            }
+
+            if (trimmed.startsWith("## ")) {
+                pushHeading(2, trimmed.replace(/^##\s+/, ""));
+                return;
+            }
+
+            const words = trimmed.match(/[A-Za-z0-9\u4e00-\u9fa5]+/g) || [];
+            wordCount += words.length;
             chunks.push(`<p>${escape(paragraph)}</p>`);
         });
 
         flushCode();
-        return chunks.join("");
+        return { html: chunks.join(""), tocItems, wordCount };
+    }
+
+    function highlightCode(codeRaw, escape) {
+        const escaped = escape(codeRaw);
+        const lines = escaped.split("\n").map((line) => {
+            let next = line
+                .replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g, '<span class="code-string">$1</span>')
+                .replace(/\b(const|let|var|function|return|if|else|for|while|class|new|import|from|export|async|await|try|catch|throw)\b/g, '<span class="code-keyword">$1</span>')
+                .replace(/\b(true|false|null|undefined|NaN)\b/g, '<span class="code-constant">$1</span>')
+                .replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="code-number">$1</span>');
+
+            if (next.includes("//")) {
+                next = next.replace(/(\/\/.*)$/g, '<span class="code-comment">$1</span>');
+            }
+
+            return next;
+        });
+
+        return lines.join("\n");
+    }
+
+    function renderToc(tocItems) {
+        if (!Array.isArray(tocItems) || tocItems.length === 0) {
+            return "";
+        }
+
+        const escape = (value) => utils.escapeHtml?.(value) ?? String(value ?? "");
+        const list = tocItems.map((item) => `
+            <a href="#${escape(item.id)}" class="article-toc-link ${item.level === 3 ? "is-sub" : ""}">${escape(item.text)}</a>
+        `).join("");
+
+        return `
+            <nav class="article-toc reveal" aria-label="Table of contents">
+                <p class="article-toc-title">On this page</p>
+                <div class="article-toc-list">${list}</div>
+            </nav>
+        `;
+    }
+
+    function getAdjacentArticles(currentSlug) {
+        const articles = utils.getArticles?.() ?? [];
+        const index = articles.findIndex((item) => item.slug === currentSlug);
+        if (index < 0) {
+            return { prev: null, next: null };
+        }
+
+        return {
+            prev: articles[index + 1] || null,
+            next: articles[index - 1] || null
+        };
+    }
+
+    function renderAdjacentLinks({ prev, next }) {
+        if (!prev && !next) {
+            return "";
+        }
+
+        const source = getSource() === "articles" ? "articles" : "home";
+        const toHref = (slug) => `article.html?slug=${encodeURIComponent(slug)}&from=${source}`;
+        const escape = (value) => utils.escapeHtml?.(value) ?? String(value ?? "");
+
+        return `
+            <nav class="article-neighbors reveal" aria-label="Article navigation">
+                ${prev ? `<a class="article-neighbor" href="${toHref(prev.slug)}"><span class="article-neighbor-kicker">Previous</span><strong>${escape(prev.title)}</strong></a>` : '<span class="article-neighbor-spacer"></span>'}
+                ${next ? `<a class="article-neighbor is-next" href="${toHref(next.slug)}"><span class="article-neighbor-kicker">Next</span><strong>${escape(next.title)}</strong></a>` : '<span class="article-neighbor-spacer"></span>'}
+            </nav>
+        `;
+    }
+
+    function updateArticleSeo(article, readingMinutes) {
+        const ensureMeta = (attribute, key, value) => {
+            if (!value) {
+                return;
+            }
+
+            let node = document.head.querySelector(`meta[${attribute}="${key}"]`);
+            if (!node) {
+                node = document.createElement("meta");
+                node.setAttribute(attribute, key);
+                document.head.appendChild(node);
+            }
+
+            node.setAttribute("content", value);
+        };
+
+        const title = `${article.title} | Orian's Blog`;
+        const description = article.excerpt || `Read ${article.title} on Orian's Blog.`;
+        const canonicalUrl = new URL(`article.html?slug=${encodeURIComponent(article.slug)}`, window.location.href).toString();
+
+        ensureMeta("name", "description", description);
+        ensureMeta("property", "og:title", title);
+        ensureMeta("property", "og:description", description);
+        ensureMeta("property", "og:type", "article");
+        ensureMeta("property", "og:url", canonicalUrl);
+        ensureMeta("name", "twitter:card", "summary_large_image");
+        ensureMeta("name", "twitter:title", title);
+        ensureMeta("name", "twitter:description", description);
+
+        let ld = document.getElementById("article-ld-json");
+        if (!ld) {
+            ld = document.createElement("script");
+            ld.type = "application/ld+json";
+            ld.id = "article-ld-json";
+            document.head.appendChild(ld);
+        }
+
+        ld.textContent = JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: article.title,
+            description,
+            datePublished: article.date || undefined,
+            dateModified: article.date || undefined,
+            mainEntityOfPage: canonicalUrl,
+            author: {
+                "@type": "Person",
+                name: "Orian"
+            },
+            publisher: {
+                "@type": "Organization",
+                name: "Orian's Blog"
+            },
+            timeRequired: `PT${readingMinutes}M`
+        });
     }
 
     function bindArticleInteractions(slug) {
@@ -358,7 +521,6 @@
                 return;
             }
 
-            // For direct-open cases (for example from desktop), prefer native history.
             if (window.history.length > 1) {
                 window.history.back();
                 return;
