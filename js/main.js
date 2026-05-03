@@ -133,11 +133,14 @@
         const onLanguageToggleClick = () => {
             const current = utils.getLanguage?.() || "en";
             utils.setLanguage?.(current === "zh" ? "en" : "zh");
-            window.location.reload();
         };
 
         const onLanguageChange = () => {
-            syncLanguageLabel();
+            try {
+                syncLanguageLabel();
+            } catch {
+                window.location.reload();
+            }
         };
 
         themeToggle.addEventListener("click", onThemeToggleClick);

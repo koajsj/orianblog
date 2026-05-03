@@ -347,8 +347,12 @@
         }
         languageHandlerBound = true;
         window.addEventListener("orian:languagechange", () => {
-            updateStaticCopy();
-            applyRender();
+            try {
+                updateStaticCopy();
+                applyRender();
+            } catch {
+                window.location.reload();
+            }
         });
     }
 
