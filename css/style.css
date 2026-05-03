@@ -561,6 +561,11 @@ body.is-scrolled .navbar {
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-soft);
+    transition:
+        transform var(--transition-base),
+        border-color var(--transition-base),
+        box-shadow var(--transition-base),
+        background-color var(--transition-base);
 }
 
 .articles-sort select {
@@ -575,6 +580,13 @@ body.is-scrolled .navbar {
 
 .articles-sort select:focus {
     outline: none;
+}
+
+.articles-sort:hover,
+.articles-sort:focus-within {
+    transform: translate3d(0, -2px, 0);
+    border-color: var(--control-border-strong);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.08);
 }
 
 
@@ -956,10 +968,12 @@ body.theme-dark .empty-state {
     margin-bottom: 1.4rem;
     font-weight: 700;
     color: var(--text-muted);
+    transition: color var(--transition-fast), transform var(--transition-fast);
 }
 
 .article-back:hover {
     color: var(--text);
+    transform: translate3d(2px, 0, 0);
 }
 
 .article-header {
@@ -1092,6 +1106,13 @@ body.theme-dark .empty-state {
     font-weight: 700;
     padding: 0.28rem 0.68rem;
     cursor: pointer;
+    transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.article-code-copy:hover {
+    transform: translate3d(0, -1px, 0);
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.14);
 }
 
 .article-code pre {
