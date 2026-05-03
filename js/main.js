@@ -136,21 +136,11 @@
             window.location.reload();
         };
 
-        const onLanguageChange = () => {
-            try {
-                syncLanguageLabel();
-            } catch {
-                window.location.reload();
-            }
-        };
-
         themeToggle.addEventListener("click", onThemeToggleClick);
         languageToggle.addEventListener("click", onLanguageToggleClick);
-        window.addEventListener("orian:languagechange", onLanguageChange);
 
         registerCleanup(() => themeToggle.removeEventListener("click", onThemeToggleClick));
         registerCleanup(() => languageToggle.removeEventListener("click", onLanguageToggleClick));
-        registerCleanup(() => window.removeEventListener("orian:languagechange", onLanguageChange));
 
         shell.append(clock, languageToggle, themeToggle);
         navActions.prepend(shell);
