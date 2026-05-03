@@ -568,16 +568,6 @@
             return;
         }
 
-        window.addEventListener("orian:languagechange", () => {
-            try {
-                const next = renderCurrentArticle();
-                if (!next) {
-                    window.location.reload();
-                }
-            } catch {
-                window.location.reload();
-            }
-        });
         window.addEventListener("pagehide", () => progressCleanup?.(), { once: true });
         window.addEventListener("pagehide", () => interactionCleanup?.(), { once: true });
     }

@@ -218,7 +218,7 @@
         return "en";
     }
 
-    function setLanguage(nextLanguage) {
+    function setLanguage(nextLanguage, options = {}) {
         const lang = normalizeLanguage(nextLanguage);
         if (getLanguage() === lang) {
             return lang;
@@ -231,7 +231,9 @@
         }
 
         document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
-        window.dispatchEvent(new CustomEvent("orian:languagechange", { detail: { lang } }));
+        if (options.notify !== false) {
+            window.dispatchEvent(new CustomEvent("orian:languagechange", { detail: { lang } }));
+        }
         return lang;
     }
 

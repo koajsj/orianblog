@@ -132,7 +132,8 @@
 
         const onLanguageToggleClick = () => {
             const current = utils.getLanguage?.() || "en";
-            utils.setLanguage?.(current === "zh" ? "en" : "zh");
+            utils.setLanguage?.(current === "zh" ? "en" : "zh", { notify: false });
+            window.location.reload();
         };
 
         const onLanguageChange = () => {

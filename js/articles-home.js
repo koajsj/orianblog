@@ -73,7 +73,6 @@
     };
 
     let filterTimer = null;
-    let languageHandlerBound = false;
 
     const formatDate = (value) => utils.formatDate?.(value, {
         year: "numeric",
@@ -341,21 +340,6 @@
         sortSelect.addEventListener("change", renderWithTransition);
     }
 
-    function bindLanguageChange() {
-        if (languageHandlerBound) {
-            return;
-        }
-        languageHandlerBound = true;
-        window.addEventListener("orian:languagechange", () => {
-            try {
-                updateStaticCopy();
-                applyRender();
-            } catch {
-                window.location.reload();
-            }
-        });
-    }
-
     function init() {
         if (!articleList) {
             return;
@@ -365,7 +349,6 @@
         bindSearch();
         bindSearchToggle();
         bindSort();
-        bindLanguageChange();
         window.addEventListener("pagehide", clearFilterTimer, { once: true });
     }
 
