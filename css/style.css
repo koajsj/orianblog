@@ -541,11 +541,12 @@ body.is-scrolled .navbar {
 }
 
 .articles-sort {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
     min-height: 2.6rem;
-    padding: 0.35rem 0.8rem;
+    padding: 0.35rem 2rem 0.35rem 0.8rem;
     border: 1px solid var(--control-border);
     border-radius: 999px;
     background: var(--control-bg);
@@ -556,7 +557,24 @@ body.is-scrolled .navbar {
     color: var(--text-soft);
 }
 
+.articles-sort::after {
+    content: "";
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-60%) rotate(45deg);
+    pointer-events: none;
+    opacity: 0.82;
+}
+
 .articles-sort select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     border: 0;
     background: transparent;
     color: var(--text);
@@ -564,10 +582,16 @@ body.is-scrolled .navbar {
     letter-spacing: normal;
     text-transform: none;
     cursor: pointer;
+    padding-right: 0.15rem;
 }
 
 .articles-sort select:focus {
     outline: none;
+}
+
+.articles-sort select option {
+    background: var(--control-bg);
+    color: var(--text);
 }
 
 .articles-sort-home {
