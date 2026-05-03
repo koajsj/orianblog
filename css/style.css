@@ -24,9 +24,9 @@ body.theme-dark {
     --text: #f3f3f3;
     --primary: #f3f3f3;
     --footer-divider: rgba(255, 255, 255, 0.16);
-    --surface-strong: #f2f2f2;
-    --surface-strong-text: #101010;
-    --border: #d8d8d8;
+    --surface-strong: #000000;
+    --surface-strong-text: #ffffff;
+    --border: #f0f0f0;
 }
 
 * {
@@ -233,6 +233,11 @@ body.is-scrolled .navbar {
     transition: transform var(--transition-fast), background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base);
 }
 
+.theme-toggle i {
+    font-size: 0.88rem;
+    line-height: 1;
+}
+
 .theme-toggle:hover {
     transform: translate3d(0, -1px, 0);
 }
@@ -340,7 +345,7 @@ body.is-scrolled .navbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-block: clamp(2rem, 6vw, 5rem);
+    padding-block: clamp(1.25rem, 4.6vw, 3.4rem);
     isolation: isolate;
     overflow: clip;
     contain: layout paint;
@@ -368,7 +373,7 @@ body.is-scrolled .navbar {
     display: inline-grid;
     gap: 0.08em;
     margin-bottom: clamp(1rem, 3vw, 2rem);
-    font-size: clamp(2rem, 5vw + 1rem, 4rem);
+    font-size: clamp(1.85rem, 4.4vw + 0.9rem, 3.5rem);
     font-weight: 300;
     line-height: 1.1;
     overflow-wrap: anywhere;
@@ -698,7 +703,7 @@ body.is-scrolled .navbar {
 }
 
 .page-intro::after {
-    content: "";
+    content: none;
     position: absolute;
     inset: auto auto 0 0;
     width: min(18rem, 40vw);
@@ -1340,7 +1345,7 @@ body.anim-in .footer.reveal {
 
 .reveal.reveal-in {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: translate3d(0, var(--scroll-shift, 0px), 0);
 }
 
 /* Responsive */

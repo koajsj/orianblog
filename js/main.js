@@ -39,6 +39,7 @@
     const motionInteractionCleanups = [];
     let revealObserver = null;
     let clockTimer = null;
+    let scrollMotionTargets = [];
 
     const scrollListenerOptions = { passive: true };
     let scrollRafScheduled = false;
@@ -96,7 +97,9 @@
         const syncToggleLabel = () => {
             const isDark = elements.body.classList.contains("theme-dark");
             toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
-            toggle.textContent = isDark ? "Light" : "Dark";
+            toggle.innerHTML = isDark
+                ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+                : '<i class="fas fa-moon" aria-hidden="true"></i>';
         };
 
         const preferredTheme = getStoredTheme();
@@ -333,6 +336,22 @@
             return;
         }
 
+        const updateScrollMotion = () => {
+            if (scrollMotionTargets.length === 0) {
+                return;
+            }
+
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+            scrollMotionTargets.forEach((target) => {
+                const rect = target.getBoundingClientRect();
+                const center = rect.top + rect.height / 2;
+                const offset = (viewportHeight / 2 - center) / viewportHeight;
+                const clamped = Math.max(-1, Math.min(1, offset));
+                const shift = clamped * 6;
+                target.style.setProperty("--scroll-shift", `${shift.toFixed(2)}px`);
+            });
+        };
+
         scrollHandler = () => {
             if (scrollRafScheduled) {
                 return;
@@ -347,6 +366,7 @@
                     const lift = -Math.min(y * 0.013, cap);
                     elements.hero.style.setProperty("--scroll-lift", `${lift}px`);
                 }
+                updateScrollMotion();
             });
         };
 
@@ -362,6 +382,7 @@
 
     function bindRevealObserver() {
         teardownRevealObserver();
+        scrollMotionTargets = [];
 
         if (isReducedMotion()) {
             revealAll();
@@ -381,6 +402,9 @@
                     }
 
                     entry.target.classList.add("reveal-in");
+                    if (!scrollMotionTargets.includes(entry.target)) {
+                        scrollMotionTargets.push(entry.target);
+                    }
                     revealObserver.unobserve(entry.target);
                 });
             },
@@ -396,6 +420,7 @@
         elements.body.classList.remove("anim-init");
         elements.body.classList.add("anim-in");
         revealAll();
+        scrollMotionTargets = [];
     }
 
     function startEntranceAnimation() {
