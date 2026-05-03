@@ -42,6 +42,24 @@
         <section class="articles-section reveal" aria-labelledby="articles-archive-title">
             <div class="section-container">
                 <h2 id="articles-archive-title" class="sr-only">Article archive</h2>
+                <div class="articles-toolbar">
+                    <label class="articles-search" for="articles-search">
+                        <span class="articles-search-icon" aria-hidden="true">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input
+                            id="articles-search"
+                            class="articles-search-input"
+                            type="search"
+                            name="search"
+                            placeholder="Search articles"
+                            autocomplete="off"
+                            spellcheck="false"
+                            data-articles-search
+                        >
+                    </label>
+                    <p class="articles-search-meta" data-articles-search-status></p>
+                </div>
                 <div class="articles-grid" data-articles-list data-articles-view="archive"></div>
             </div>
         </section>

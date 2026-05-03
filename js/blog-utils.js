@@ -4,9 +4,93 @@
     const DEFAULT_LOCALE = "en-US";
     const formatterCache = new Map();
     const utils = window.OrianBlog || {};
+    const warnedDuplicateSlugs = new Set();
+    const warnedInvalidArticles = new Set();
+
+    function parseDateValue(value) {
+        if (typeof value !== "string" || !value) {
+            return null;
+        }
+
+        const date = new Date(`${value}T00:00:00`);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function sortArticlesByDate(articles) {
+        return [...articles].sort((left, right) => {
+            const leftDate = parseDateValue(left.date);
+            const rightDate = parseDateValue(right.date);
+
+            if (leftDate && rightDate) {
+                return rightDate.getTime() - leftDate.getTime();
+            }
+
+            if (leftDate) {
+                return -1;
+            }
+
+            if (rightDate) {
+                return 1;
+            }
+
+            return String(right.title ?? "").localeCompare(String(left.title ?? ""));
+        });
+    }
+
+    function normalizeArticle(article, index, seenSlugs) {
+        if (!article || typeof article !== "object") {
+            if (!warnedInvalidArticles.has(index)) {
+                console.warn(`Skipping invalid article at index ${index}.`);
+                warnedInvalidArticles.add(index);
+            }
+            return null;
+        }
+
+        const slug = typeof article.slug === "string" ? article.slug.trim() : "";
+        if (!slug) {
+            if (!warnedInvalidArticles.has(index)) {
+                console.warn(`Skipping article at index ${index} because it is missing a slug.`);
+                warnedInvalidArticles.add(index);
+            }
+            return null;
+        }
+
+        if (seenSlugs.has(slug)) {
+            if (!warnedDuplicateSlugs.has(slug)) {
+                console.warn(`Skipping duplicate article slug "${slug}".`);
+                warnedDuplicateSlugs.add(slug);
+            }
+            return null;
+        }
+
+        seenSlugs.add(slug);
+
+        const content = Array.isArray(article.content)
+            ? article.content
+                .map((paragraph) => String(paragraph ?? "").trim())
+                .filter(Boolean)
+            : [];
+
+        return {
+            slug,
+            title: String(article.title ?? slug),
+            date: typeof article.date === "string" ? article.date : "",
+            excerpt: String(article.excerpt ?? ""),
+            content
+        };
+    }
 
     function getArticles() {
-        return Array.isArray(window.ARTICLES_DATA) ? window.ARTICLES_DATA : [];
+        if (!Array.isArray(window.ARTICLES_DATA)) {
+            return [];
+        }
+
+        const seenSlugs = new Set();
+        const normalized = window.ARTICLES_DATA
+            .map((article, index) => normalizeArticle(article, index, seenSlugs))
+            .filter(Boolean);
+
+        return sortArticlesByDate(normalized);
     }
 
     function getDateFormatter(locale, options) {
@@ -23,8 +107,8 @@
             return "";
         }
 
-        const date = new Date(`${value}T00:00:00`);
-        if (Number.isNaN(date.getTime())) {
+        const date = parseDateValue(value);
+        if (!date) {
             return value;
         }
 

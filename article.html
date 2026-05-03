@@ -14,7 +14,7 @@
 <body class="subpage">
     <nav class="navbar navbar-subpage" aria-label="Main navigation">
         <div class="nav-container">
-            <a href="articles.html" class="nav-back-btn" aria-label="Return to articles">
+            <a href="#" class="nav-back-btn" aria-label="Return to previous page" data-article-back>
                 <i class="fas fa-arrow-left" aria-hidden="true"></i>
                 Back
             </a>
@@ -30,12 +30,15 @@
             </div>
         </div>
     </nav>
+    <div class="reading-progress" aria-hidden="true">
+        <div class="reading-progress-bar" data-reading-progress-bar></div>
+    </div>
 
     <main id="main-content">
         <section class="article-shell" data-article-root></section>
     </main>
 
-    <footer class="footer bg-dark text-white">
+    <footer class="footer bg-dark text-white reveal">
         <div class="section-container footer-flex">
             <div class="logo"><i class="fas fa-code" aria-hidden="true"></i> Orian's Blog</div>
             <div>

@@ -75,11 +75,43 @@
 
         <section id="articles" class="articles-section reveal" aria-labelledby="articles-title">
             <div class="section-container">
-                <div class="section-heading">
-                    <p class="section-kicker section-kicker-strong">ARTICLES</p>
-                    <h2 id="articles-title" class="section-title">Latest writing.</h2>
+                <div class="section-heading-row">
+                    <div class="section-heading">
+                        <p class="section-kicker section-kicker-strong">ARTICLES</p>
+                        <h2 id="articles-title" class="section-title">Latest writing.</h2>
+                    </div>
+                    <div class="articles-home-tools">
+                        <div class="articles-home-search" data-articles-search-shell>
+                            <button
+                                type="button"
+                                class="articles-search-toggle"
+                                aria-label="Search recent articles"
+                                aria-expanded="false"
+                                aria-controls="home-articles-search"
+                                data-articles-search-toggle
+                            >
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                            </button>
+                            <label class="articles-search articles-search-inline" for="home-articles-search">
+                                <span class="articles-search-icon" aria-hidden="true">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input
+                                    id="home-articles-search"
+                                    class="articles-search-input"
+                                    type="search"
+                                    name="home-search"
+                                    placeholder="Search recent writing"
+                                    autocomplete="off"
+                                    spellcheck="false"
+                                    data-articles-search
+                                >
+                            </label>
+                        </div>
+                        <a href="articles.html" class="articles-archive-link">All articles</a>
+                    </div>
                 </div>
-                <div class="articles-grid" data-articles-list></div>
+                <div class="articles-grid" data-articles-list data-articles-view="recent"></div>
             </div>
         </section>
     </main>

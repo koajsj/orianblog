@@ -3,6 +3,7 @@
 
     const STAGGER_STEP_MS = 90;
     const REVEAL_STAGGER_STEP_MS = 70;
+    const CARD_STAGGER_STEP_MS = 85;
     const PARALLAX_RANGE_X = 14;
     const PARALLAX_RANGE_Y = 10;
     const MAGNETIC_STRENGTH = 0.12;
@@ -14,6 +15,7 @@
         hero: ".hero",
         heroContent: ".hero-content",
         heroTitle: ".hero-title",
+        articleCards: ".article-card",
         magneticTargets: ".social-icons a, .resume-btn",
         revealTargets: ".reveal"
     };
@@ -26,6 +28,7 @@
         hero: document.querySelector(selectors.hero),
         heroContent: document.querySelector(selectors.heroContent),
         heroTitle: document.querySelector(selectors.heroTitle),
+        articleCards: Array.from(document.querySelectorAll(selectors.articleCards)),
         anchors: Array.from(document.querySelectorAll(selectors.anchors)),
         magneticTargets: Array.from(document.querySelectorAll(selectors.magneticTargets)),
         revealTargets: Array.from(document.querySelectorAll(selectors.revealTargets))
@@ -128,6 +131,10 @@
 
         elements.revealTargets.forEach((target, index) => {
             target.style.setProperty("--reveal-delay", `${index * REVEAL_STAGGER_STEP_MS}ms`);
+        });
+
+        elements.articleCards.forEach((target, index) => {
+            target.style.setProperty("--card-delay", `${index * CARD_STAGGER_STEP_MS}ms`);
         });
     }
 
