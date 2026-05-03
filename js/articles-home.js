@@ -6,6 +6,7 @@
     const SEARCH_STATUS_SELECTOR = "[data-articles-search-status]";
     const SEARCH_TOGGLE_SELECTOR = "[data-articles-search-toggle]";
     const SEARCH_SHELL_SELECTOR = "[data-articles-search-shell]";
+    const SORT_SELECTOR = "[data-articles-sort]";
     const RECENT_LIMIT = 3;
     const FILTER_TRANSITION_MS = 220;
     const CARD_STAGGER_STEP_MS = 85;
@@ -15,6 +16,7 @@
     const searchStatus = document.querySelector(SEARCH_STATUS_SELECTOR);
     const searchToggle = document.querySelector(SEARCH_TOGGLE_SELECTOR);
     const searchShell = document.querySelector(SEARCH_SHELL_SELECTOR);
+    const sortSelect = document.querySelector(SORT_SELECTOR);
     const utils = window.OrianBlog || {};
 
     let filterTimer = null;
@@ -62,7 +64,7 @@
         return `
             <article class="article-card" style="--card-delay: ${index * CARD_STAGGER_STEP_MS}ms">
                 <a class="article-link" href="${getArticleLink(article)}">
-                    <p class="article-meta">${formatDate(article.date)}</p>
+                    <p class="article-meta">${formatDate(article.date)} · ${article.views || 0} views</p>
                     <h3 class="article-card-title">${escape(article.title)}</h3>
                     <p class="article-excerpt">${escape(article.excerpt)}</p>
                     <span class="article-cta">Read article</span>
@@ -103,6 +105,17 @@
         });
     }
 
+    function sortArticles(articles) {
+        const sortType = sortSelect?.value || "latest";
+        if (sortType === "views") {
+            return [...articles].sort((left, right) => (right.views || 0) - (left.views || 0));
+        }
+        if (sortType === "likes") {
+            return [...articles].sort((left, right) => (right.likes || 0) - (left.likes || 0));
+        }
+        return articles;
+    }
+
     function updateSearchStatus(count, query) {
         if (!searchStatus) {
             return;
@@ -132,7 +145,7 @@
         }
 
         const query = getQuery();
-        const articles = filterArticles(resolveBaseArticles(getArticles()), query);
+        const articles = sortArticles(filterArticles(resolveBaseArticles(getArticles()), query));
 
         updateSearchStatus(articles.length, query);
 
@@ -222,6 +235,14 @@
         searchInput.addEventListener("keydown", onSearchKeydown);
     }
 
+    function bindSort() {
+        if (!sortSelect) {
+            return;
+        }
+
+        sortSelect.addEventListener("change", renderWithTransition);
+    }
+
     function init() {
         if (!articleList) {
             return;
@@ -230,6 +251,7 @@
         applyRender();
         bindSearch();
         bindSearchToggle();
+        bindSort();
         window.addEventListener("pagehide", clearFilterTimer, { once: true });
     }
 

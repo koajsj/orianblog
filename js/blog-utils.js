@@ -6,6 +6,8 @@
     const utils = window.OrianBlog || {};
     const warnedDuplicateSlugs = new Set();
     const warnedInvalidArticles = new Set();
+    const STORAGE_KEY = "orian_blog_metrics_v1";
+    const DEFAULT_VIEW_SEED = [8, 6, 10, 5, 2];
 
     function parseDateValue(value) {
         if (typeof value !== "string" || !value) {
@@ -76,8 +78,104 @@
             title: String(article.title ?? slug),
             date: typeof article.date === "string" ? article.date : "",
             excerpt: String(article.excerpt ?? ""),
-            content
+            content,
+            views: Number.isFinite(Number(article.views)) ? Number(article.views) : 0
         };
+    }
+
+    function safeParseJson(value) {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return null;
+        }
+    }
+
+    function getStoredMetrics() {
+        const raw = window.localStorage?.getItem(STORAGE_KEY);
+        const parsed = safeParseJson(raw || "");
+        if (!parsed || typeof parsed !== "object") {
+            return {};
+        }
+        return parsed;
+    }
+
+    function setStoredMetrics(metrics) {
+        window.localStorage?.setItem(STORAGE_KEY, JSON.stringify(metrics));
+    }
+
+    function readArticleMetrics(slug) {
+        const metrics = getStoredMetrics();
+        const current = metrics[slug];
+        if (!current || typeof current !== "object") {
+            return { views: 0, likes: 0, bookmarked: false, viewed: false };
+        }
+
+        return {
+            views: Number.isFinite(Number(current.views)) ? Number(current.views) : 0,
+            likes: Number.isFinite(Number(current.likes)) ? Number(current.likes) : 0,
+            bookmarked: Boolean(current.bookmarked),
+            viewed: Boolean(current.viewed)
+        };
+    }
+
+    function writeArticleMetrics(slug, nextValues) {
+        const metrics = getStoredMetrics();
+        metrics[slug] = {
+            ...readArticleMetrics(slug),
+            ...nextValues
+        };
+        setStoredMetrics(metrics);
+        return readArticleMetrics(slug);
+    }
+
+    function ensureInitialMetrics(articles) {
+        const metrics = getStoredMetrics();
+        let changed = false;
+
+        articles.forEach((article, index) => {
+            if (metrics[article.slug]) {
+                return;
+            }
+
+            metrics[article.slug] = {
+                views: article.views > 0 ? article.views : DEFAULT_VIEW_SEED[index % DEFAULT_VIEW_SEED.length],
+                likes: 0,
+                bookmarked: false,
+                viewed: false
+            };
+            changed = true;
+        });
+
+        if (changed) {
+            setStoredMetrics(metrics);
+        }
+    }
+
+    function getArticleStats(slug) {
+        return readArticleMetrics(slug);
+    }
+
+    function incrementArticleView(slug) {
+        const current = readArticleMetrics(slug);
+        if (current.viewed) {
+            return current;
+        }
+
+        return writeArticleMetrics(slug, {
+            views: current.views + 1,
+            viewed: true
+        });
+    }
+
+    function toggleArticleBookmark(slug) {
+        const current = readArticleMetrics(slug);
+        return writeArticleMetrics(slug, { bookmarked: !current.bookmarked });
+    }
+
+    function incrementArticleLike(slug) {
+        const current = readArticleMetrics(slug);
+        return writeArticleMetrics(slug, { likes: current.likes + 1 });
     }
 
     function getArticles() {
@@ -90,7 +188,17 @@
             .map((article, index) => normalizeArticle(article, index, seenSlugs))
             .filter(Boolean);
 
-        return sortArticlesByDate(normalized);
+        ensureInitialMetrics(normalized);
+
+        return sortArticlesByDate(normalized).map((article) => {
+            const stats = getArticleStats(article.slug);
+            return {
+                ...article,
+                views: stats.views,
+                likes: stats.likes,
+                bookmarked: stats.bookmarked
+            };
+        });
     }
 
     function getDateFormatter(locale, options) {
@@ -142,7 +250,11 @@
         escapeHtml,
         formatDate,
         getArticleBySlug,
-        getArticles
+        getArticleStats,
+        getArticles,
+        incrementArticleLike,
+        incrementArticleView,
+        toggleArticleBookmark
     });
 
     window.OrianBlog = utils;

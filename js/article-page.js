@@ -7,6 +7,7 @@
     const utils = window.OrianBlog || {};
     const scrollListenerOptions = { passive: true };
     let progressCleanup = null;
+    let interactionCleanup = null;
 
     function getSlug() {
         const params = new URLSearchParams(window.location.search);
@@ -41,22 +42,138 @@
         const paragraphs = Array.isArray(article.content) && article.content.length > 0
             ? article.content
             : ["This article is not available yet."];
-        const content = paragraphs
-            .map((paragraph) => `<p>${utils.escapeHtml?.(paragraph) ?? paragraph}</p>`)
-            .join("");
+        const content = renderArticleContent(paragraphs);
+        const stats = utils.getArticleStats?.(article.slug) ?? { views: article.views || 0, likes: 0, bookmarked: false };
 
         root.innerHTML = `
             <div class="section-container article-layout">
                 <header class="article-header reveal">
-                    <p class="article-meta">${formatDate(article.date)}</p>
+                    <p class="article-meta">${formatDate(article.date)} · <span data-views-count>${stats.views || 0}</span> views</p>
                     <h1 class="article-page-title">${utils.escapeHtml?.(article.title) ?? article.title}</h1>
                     <p class="article-excerpt">${utils.escapeHtml?.(article.excerpt) ?? article.excerpt}</p>
+                    <div class="article-actions" data-article-actions>
+                        <button type="button" class="article-action-btn" data-like-btn>
+                            <i class="fas fa-thumbs-up" aria-hidden="true"></i>
+                            Like <span data-likes-count>${stats.likes || 0}</span>
+                        </button>
+                        <button type="button" class="article-action-btn ${stats.bookmarked ? "is-active" : ""}" data-bookmark-btn>
+                            <i class="fas fa-bookmark" aria-hidden="true"></i>
+                            <span data-bookmark-label>${stats.bookmarked ? "Saved" : "Save"}</span>
+                        </button>
+                    </div>
                 </header>
                 <article class="article-body reveal">
                     ${content}
                 </article>
             </div>
         `;
+    }
+
+    function renderArticleContent(paragraphs) {
+        const escape = (value) => utils.escapeHtml?.(value) ?? String(value ?? "");
+        const chunks = [];
+        let codeBuffer = [];
+        let inCode = false;
+
+        const flushCode = () => {
+            if (codeBuffer.length === 0) {
+                return;
+            }
+            const codeValue = escape(codeBuffer.join("\n"));
+            chunks.push(`
+                <div class="article-code">
+                    <button type="button" class="article-code-copy" data-code-copy>Copy</button>
+                    <pre><code>${codeValue}</code></pre>
+                </div>
+            `);
+            codeBuffer = [];
+        };
+
+        paragraphs.forEach((paragraph) => {
+            if (paragraph.trim() === "```") {
+                if (inCode) {
+                    flushCode();
+                }
+                inCode = !inCode;
+                return;
+            }
+
+            if (inCode) {
+                codeBuffer.push(paragraph);
+                return;
+            }
+
+            chunks.push(`<p>${escape(paragraph)}</p>`);
+        });
+
+        flushCode();
+        return chunks.join("");
+    }
+
+    function bindArticleInteractions(slug) {
+        if (interactionCleanup) {
+            interactionCleanup();
+            interactionCleanup = null;
+        }
+
+        const views = root.querySelector("[data-views-count]");
+        const likes = root.querySelector("[data-likes-count]");
+        const likeBtn = root.querySelector("[data-like-btn]");
+        const bookmarkBtn = root.querySelector("[data-bookmark-btn]");
+        const bookmarkLabel = root.querySelector("[data-bookmark-label]");
+        const copyButtons = [...root.querySelectorAll("[data-code-copy]")];
+
+        const updateStatsView = (stats) => {
+            if (views) {
+                views.textContent = String(stats.views || 0);
+            }
+            if (likes) {
+                likes.textContent = String(stats.likes || 0);
+            }
+            if (bookmarkBtn) {
+                bookmarkBtn.classList.toggle("is-active", Boolean(stats.bookmarked));
+            }
+            if (bookmarkLabel) {
+                bookmarkLabel.textContent = stats.bookmarked ? "Saved" : "Save";
+            }
+        };
+
+        updateStatsView(utils.incrementArticleView?.(slug) ?? utils.getArticleStats?.(slug) ?? {});
+
+        const onLike = () => updateStatsView(utils.incrementArticleLike?.(slug) ?? {});
+        const onBookmark = () => updateStatsView(utils.toggleArticleBookmark?.(slug) ?? {});
+
+        likeBtn?.addEventListener("click", onLike);
+        bookmarkBtn?.addEventListener("click", onBookmark);
+
+        const copyHandlers = copyButtons.map((button) => {
+            const handler = async () => {
+                const codeNode = button.parentElement?.querySelector("code");
+                if (!codeNode) {
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.writeText(codeNode.textContent || "");
+                    button.textContent = "Copied";
+                } catch {
+                    button.textContent = "Failed";
+                }
+
+                window.setTimeout(() => {
+                    button.textContent = "Copy";
+                }, 1100);
+            };
+
+            button.addEventListener("click", handler);
+            return { button, handler };
+        });
+
+        interactionCleanup = () => {
+            likeBtn?.removeEventListener("click", onLike);
+            bookmarkBtn?.removeEventListener("click", onBookmark);
+            copyHandlers.forEach(({ button, handler }) => button.removeEventListener("click", handler));
+        };
     }
 
     function bindReadingProgress() {
@@ -180,7 +297,9 @@
 
         renderArticle(article);
         bindReadingProgress();
+        bindArticleInteractions(article.slug);
         window.addEventListener("pagehide", () => progressCleanup?.(), { once: true });
+        window.addEventListener("pagehide", () => interactionCleanup?.(), { once: true });
     }
 
     init();

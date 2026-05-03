@@ -58,7 +58,17 @@
                             data-articles-search
                         >
                     </label>
-                    <p class="articles-search-meta" data-articles-search-status></p>
+                    <div class="articles-toolbar-side">
+                        <label class="articles-sort" for="articles-sort">
+                            <span>Sort</span>
+                            <select id="articles-sort" data-articles-sort>
+                                <option value="latest">Latest</option>
+                                <option value="views">Most viewed</option>
+                                <option value="likes">Most liked</option>
+                            </select>
+                        </label>
+                        <p class="articles-search-meta" data-articles-search-status></p>
+                    </div>
                 </div>
                 <div class="articles-grid" data-articles-list data-articles-view="archive"></div>
             </div>
