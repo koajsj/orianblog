@@ -1,15 +1,29 @@
 window.ARTICLES_DATA = [
     {
         slug: "paper-boat-in-the-wind",
-        title: "风中的纸船",
+        title: {
+            zh: "风中的纸船",
+            en: "Paper Boat in the Wind"
+        },
         date: "2026-05-03",
-        excerpt: "黄昏的河面泛着微光，像一条缓缓呼吸的银色长蛇。",
-        content: [
-            "黄昏的河面泛着微光，像一条缓缓呼吸的银色长蛇。林舟蹲在岸边，把一张旧作业纸折成一艘小船。纸上还有几道未完成的数学题，铅笔印已被岁月磨淡。",
-            "他轻轻将纸船放入水中，看它被水流带走，先是摇摇晃晃，然后坚定地顺流而下。风从河对岸吹来，带着青草和泥土的气息，也带走了他心底那份沉甸甸的闷。",
-            "林舟想起了多年前的自己——那个总在放学后等父亲的小男孩。父亲总会笑着递给他一颗糖，说：“回家吧，今天的风真好。”可如今，父亲的笑容只剩在记忆里，像河面上的倒影，轻轻一碰就碎了。",
-            "纸船渐渐远去，消失在拐角的暮色中。林舟站起身，深吸一口气，仿佛那一口风里藏着父亲的声音。那一刻，他明白，有些告别并不是结束，而是另一种陪伴。"
-        ]
+        excerpt: {
+            zh: "黄昏的河面泛着微光，像一条缓缓呼吸的银色长蛇。",
+            en: "At dusk, the river glows softly like a long silver serpent breathing in the dark."
+        },
+        content: {
+            zh: [
+                "黄昏的河面泛着微光，像一条缓缓呼吸的银色长蛇。林舟蹲在岸边，把一张旧作业纸折成一艘小船。纸上还有几道未完成的数学题，铅笔印已被岁月磨淡。",
+                "他轻轻将纸船放入水中，看它被水流带走，先是摇摇晃晃，然后坚定地顺流而下。风从河对岸吹来，带着青草和泥土的气息，也带走了他心底那份沉甸甸的闷。",
+                "林舟想起了多年前的自己——那个总在放学后等父亲的小男孩。父亲总会笑着递给他一颗糖，说：“回家吧，今天的风真好。”可如今，父亲的笑容只剩在记忆里，像河面上的倒影，轻轻一碰就碎了。",
+                "纸船渐渐远去，消失在拐角的暮色中。林舟站起身，深吸一口气，仿佛那一口风里藏着父亲的声音。那一刻，他明白，有些告别并不是结束，而是另一种陪伴。"
+            ],
+            en: [
+                "At dusk, the river shimmered softly, like a long silver serpent breathing in slow rhythm. Lin Zhou crouched by the bank and folded an old worksheet into a tiny paper boat. A few unfinished math problems were still visible, their pencil marks worn pale by time.",
+                "He set the boat onto the water with care. It wobbled at first, then steadied itself and followed the current downstream. Wind came from the far bank, carrying the scent of grass and wet soil, and with it some of the heaviness inside his chest drifted away.",
+                "He thought of his younger self, the boy who used to wait after school for his father. His father would always smile, hand him a candy, and say, \"Let's go home. The wind is good today.\" Now that smile existed only in memory, like a reflection on the river, shattered at the slightest touch.",
+                "The paper boat floated farther and disappeared into the dusk around the bend. Lin Zhou stood up and took a deep breath, as if that breath of wind still carried his father's voice. In that moment, he understood: some farewells are not endings, but another form of companionship."
+            ]
+        }
     },
     {
         slug: "motion-notes",

@@ -20,6 +20,13 @@
     }
 
     function sortArticlesByDate(articles) {
+        const getComparableTitle = (article) => {
+            if (article && article.title && typeof article.title === "object") {
+                return String(article.title.en || article.title.zh || "");
+            }
+            return String(article?.title ?? "");
+        };
+
         return [...articles].sort((left, right) => {
             const leftDate = parseDateValue(left.date);
             const rightDate = parseDateValue(right.date);
@@ -36,7 +43,7 @@
                 return 1;
             }
 
-            return String(right.title ?? "").localeCompare(String(left.title ?? ""));
+            return getComparableTitle(right).localeCompare(getComparableTitle(left));
         });
     }
 
@@ -213,6 +220,10 @@
 
     function setLanguage(nextLanguage) {
         const lang = normalizeLanguage(nextLanguage);
+        if (getLanguage() === lang) {
+            return lang;
+        }
+
         try {
             window.localStorage?.setItem(LANGUAGE_KEY, lang);
         } catch {

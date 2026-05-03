@@ -32,7 +32,8 @@
             copy: "Copy",
             backArticles: "Return to articles",
             backHome: "Return to home",
-            backPrev: "Return to previous page"
+            backPrev: "Return to previous page",
+            backText: "Back"
         },
         zh: {
             notFound: "该文章不存在。",
@@ -55,7 +56,8 @@
             copy: "复制",
             backArticles: "返回文章列表",
             backHome: "返回首页",
-            backPrev: "返回上一页"
+            backPrev: "返回上一页",
+            backText: "返回"
         }
     };
 
@@ -88,7 +90,9 @@
 
     function renderArticle(article) {
         document.title = `${article.title} | Orian's Blog`;
-        const paragraphs = Array.isArray(article.content) && article.content.length > 0 ? article.content : [tr("unavailable")];
+        const paragraphs = Array.isArray(article.content) && article.content.length > 0
+            ? article.content
+            : [tr("unavailable")];
         const { html: content, tocItems, wordCount } = renderArticleContent(paragraphs);
         const readingMinutes = Math.max(1, Math.round(wordCount / 220));
         const stats = utils.getArticleStats?.(article.slug) ?? { views: article.views || 0, likes: 0, bookmarked: false };
@@ -125,6 +129,7 @@
                 </section>
             </div>
         `;
+
         updateArticleSeo(article, readingMinutes);
     }
 
@@ -137,19 +142,32 @@
         let headingIndex = 0;
         let wordCount = 0;
 
-        const slugify = (value) => String(value ?? "").trim().toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "") || "section";
+        const slugify = (value) => String(value ?? "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9\u4e00-\u9fa5\s-]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "") || "section";
+
         const pushHeading = (level, text) => {
             headingIndex += 1;
             const id = `section-${slugify(text)}-${headingIndex}`;
             tocItems.push({ id, text, level });
             chunks.push(`<h${level} id="${id}">${escape(text)}</h${level}>`);
         };
+
         const flushCode = () => {
             if (codeBuffer.length === 0) {
                 return;
             }
             const codeValue = highlightCode(codeBuffer.join("\n"), escape);
-            chunks.push(`<div class="article-code"><button type="button" class="article-code-copy" data-code-copy>${tr("copy")}</button><pre><code>${codeValue}</code></pre></div>`);
+            chunks.push(`
+                <div class="article-code">
+                    <button type="button" class="article-code-copy" data-code-copy>${tr("copy")}</button>
+                    <pre><code>${codeValue}</code></pre>
+                </div>
+            `);
             codeBuffer = [];
         };
 
@@ -202,8 +220,15 @@
             return "";
         }
         const escape = (value) => utils.escapeHtml?.(value) ?? String(value ?? "");
-        const list = tocItems.map((item) => `<a href="#${escape(item.id)}" class="article-toc-link ${item.level === 3 ? "is-sub" : ""}">${escape(item.text)}</a>`).join("");
-        return `<nav class="article-toc reveal" aria-label="Table of contents"><p class="article-toc-title">${tr("toc")}</p><div class="article-toc-list">${list}</div></nav>`;
+        const list = tocItems.map((item) => `
+            <a href="#${escape(item.id)}" class="article-toc-link ${item.level === 3 ? "is-sub" : ""}">${escape(item.text)}</a>
+        `).join("");
+        return `
+            <nav class="article-toc reveal" aria-label="Table of contents">
+                <p class="article-toc-title">${tr("toc")}</p>
+                <div class="article-toc-list">${list}</div>
+            </nav>
+        `;
     }
 
     function getAdjacentArticles(currentSlug) {
@@ -212,7 +237,10 @@
         if (index < 0) {
             return { prev: null, next: null };
         }
-        return { prev: articles[index + 1] || null, next: articles[index - 1] || null };
+        return {
+            prev: articles[index + 1] || null,
+            next: articles[index - 1] || null
+        };
     }
 
     function renderAdjacentLinks({ prev, next }) {
@@ -247,6 +275,7 @@
         const title = `${article.title} | Orian's Blog`;
         const description = article.excerpt || `Read ${article.title} on Orian's Blog.`;
         const canonicalUrl = new URL(`article.html?slug=${encodeURIComponent(article.slug)}`, window.location.href).toString();
+
         ensureMeta("name", "description", description);
         ensureMeta("property", "og:title", title);
         ensureMeta("property", "og:description", description);
@@ -282,6 +311,7 @@
             interactionCleanup();
             interactionCleanup = null;
         }
+
         const views = root.querySelector("[data-views-count]");
         const likes = root.querySelector("[data-likes-count]");
         const likeBtn = root.querySelector("[data-like-btn]");
@@ -305,6 +335,7 @@
         };
 
         updateStatsView(utils.incrementArticleView?.(slug) ?? utils.getArticleStats?.(slug) ?? {});
+
         const onLike = () => updateStatsView(utils.incrementArticleLike?.(slug) ?? {});
         const onBookmark = () => updateStatsView(utils.toggleArticleBookmark?.(slug) ?? {});
         likeBtn?.addEventListener("click", onLike);
@@ -380,8 +411,14 @@
                 listNode.innerHTML = `<div class="empty-state">${tr("noComments")}</div>`;
                 return;
             }
-            listNode.innerHTML = comments.map((comment) => `<article class="comment-item"><p class="comment-meta">${escape(comment.author)} · ${escape(comment.time)}</p><p>${escape(comment.content)}</p></article>`).join("");
+            listNode.innerHTML = comments.map((comment) => `
+                <article class="comment-item">
+                    <p class="comment-meta">${escape(comment.author)} · ${escape(comment.time)}</p>
+                    <p>${escape(comment.content)}</p>
+                </article>
+            `).join("");
         };
+
         const onSubmit = (event) => {
             event.preventDefault();
             const formData = new FormData(form);
@@ -390,10 +427,15 @@
             if (!author || !content) {
                 return;
             }
-            saveComment(slug, { author, content, time: new Date().toLocaleString("zh-CN", { hour12: false }) });
+            saveComment(slug, {
+                author,
+                content,
+                time: new Date().toLocaleString("zh-CN", { hour12: false })
+            });
             form.reset();
             render();
         };
+
         form.addEventListener("submit", onSubmit);
         render();
 
@@ -417,6 +459,7 @@
             progressBar.style.transform = "scaleX(0)";
             return;
         }
+
         let rafId = 0;
         const updateProgress = () => {
             rafId = 0;
@@ -431,15 +474,18 @@
             const rawProgress = (window.scrollY - absoluteTop) / scrollableDistance;
             progressBar.style.transform = `scaleX(${Math.min(Math.max(rawProgress, 0), 1)})`;
         };
+
         const requestProgressUpdate = () => {
             if (rafId) {
                 return;
             }
             rafId = window.requestAnimationFrame(updateProgress);
         };
+
         window.addEventListener("scroll", requestProgressUpdate, scrollListenerOptions);
         window.addEventListener("resize", requestProgressUpdate);
         requestProgressUpdate();
+
         progressCleanup = () => {
             window.removeEventListener("scroll", requestProgressUpdate, scrollListenerOptions);
             window.removeEventListener("resize", requestProgressUpdate);
@@ -454,25 +500,25 @@
         if (!backButton) {
             return;
         }
-        const backText = (label) => {
+
+        const setBackText = () => {
             if (backButton.childNodes.length > 0) {
-                backButton.childNodes[backButton.childNodes.length - 1].nodeValue = ` ${label}`;
+                backButton.childNodes[backButton.childNodes.length - 1].nodeValue = ` ${tr("backText")}`;
             }
         };
+
         const source = getSource();
         if (source === "articles") {
             backButton.setAttribute("href", "articles.html");
             backButton.setAttribute("aria-label", tr("backArticles"));
-            backText(utils.getLanguage?.() === "zh" ? "返回" : "Back");
         } else if (source === "home") {
             backButton.setAttribute("href", "index.html");
             backButton.setAttribute("aria-label", tr("backHome"));
-            backText(utils.getLanguage?.() === "zh" ? "返回" : "Back");
         } else {
             backButton.setAttribute("href", "#");
             backButton.setAttribute("aria-label", tr("backPrev"));
-            backText(utils.getLanguage?.() === "zh" ? "返回" : "Back");
         }
+        setBackText();
 
         backButton.onclick = (event) => {
             event.preventDefault();
@@ -516,10 +562,12 @@
         if (!root) {
             return;
         }
+
         const article = renderCurrentArticle();
         if (!article) {
             return;
         }
+
         window.addEventListener("orian:languagechange", () => {
             try {
                 const next = renderCurrentArticle();

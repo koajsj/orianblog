@@ -19,6 +19,7 @@
         magneticTargets: ".social-icons a, .resume-btn",
         revealTargets: ".reveal"
     };
+
     const THEME_STORAGE_KEY = "orian_blog_theme";
     const utils = window.OrianBlog || {};
 
@@ -91,26 +92,25 @@
         clock.setAttribute("aria-label", "Current time");
         clock.textContent = formatClock();
 
-        const toggle = document.createElement("button");
-        toggle.type = "button";
-        toggle.className = "theme-toggle";
-
         const languageToggle = document.createElement("button");
         languageToggle.type = "button";
         languageToggle.className = "language-toggle";
 
-        const syncToggleLabel = () => {
+        const themeToggle = document.createElement("button");
+        themeToggle.type = "button";
+        themeToggle.className = "theme-toggle";
+
+        const syncThemeLabel = () => {
             const isDark = elements.body.classList.contains("theme-dark");
-            toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
-            toggle.innerHTML = isDark
+            themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+            themeToggle.innerHTML = isDark
                 ? '<i class="fas fa-sun" aria-hidden="true"></i>'
                 : '<i class="fas fa-moon" aria-hidden="true"></i>';
         };
 
         const syncLanguageLabel = () => {
             const lang = utils.getLanguage?.() || "en";
-            const next = lang === "zh" ? "EN" : "中";
-            languageToggle.textContent = next;
+            languageToggle.textContent = lang === "zh" ? "EN" : "中";
             languageToggle.setAttribute("aria-label", lang === "zh" ? "Switch to English" : "切换到中文");
         };
 
@@ -120,34 +120,34 @@
         } else {
             applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
         }
-        syncToggleLabel();
+        syncThemeLabel();
+        syncLanguageLabel();
 
-        const onToggleClick = () => {
+        const onThemeToggleClick = () => {
             const nextTheme = elements.body.classList.contains("theme-dark") ? "light" : "dark";
             applyTheme(nextTheme);
             setStoredTheme(nextTheme);
-            syncToggleLabel();
+            syncThemeLabel();
         };
 
         const onLanguageToggleClick = () => {
             const current = utils.getLanguage?.() || "en";
-            const next = current === "zh" ? "en" : "zh";
-            utils.setLanguage?.(next);
+            utils.setLanguage?.(current === "zh" ? "en" : "zh");
         };
 
         const onLanguageChange = () => {
             syncLanguageLabel();
         };
 
-        toggle.addEventListener("click", onToggleClick);
+        themeToggle.addEventListener("click", onThemeToggleClick);
         languageToggle.addEventListener("click", onLanguageToggleClick);
         window.addEventListener("orian:languagechange", onLanguageChange);
-        registerCleanup(() => toggle.removeEventListener("click", onToggleClick));
+
+        registerCleanup(() => themeToggle.removeEventListener("click", onThemeToggleClick));
         registerCleanup(() => languageToggle.removeEventListener("click", onLanguageToggleClick));
         registerCleanup(() => window.removeEventListener("orian:languagechange", onLanguageChange));
 
-        syncLanguageLabel();
-        shell.append(clock, languageToggle, toggle);
+        shell.append(clock, languageToggle, themeToggle);
         navActions.prepend(shell);
 
         const updateClock = () => {
@@ -246,11 +246,9 @@
         elements.magneticTargets.forEach((target, index) => {
             target.style.setProperty("--stagger-delay", `${index * STAGGER_STEP_MS}ms`);
         });
-
         elements.revealTargets.forEach((target, index) => {
             target.style.setProperty("--reveal-delay", `${index * REVEAL_STAGGER_STEP_MS}ms`);
         });
-
         elements.articleCards.forEach((target, index) => {
             target.style.setProperty("--card-delay", `${index * CARD_STAGGER_STEP_MS}ms`);
         });
@@ -285,28 +283,27 @@
             return;
         }
 
-        const hero = elements.hero;
-        const heroContent = elements.heroContent;
-
         const onPointerMove = (event) => {
-            const rect = hero.getBoundingClientRect();
+            const rect = elements.hero.getBoundingClientRect();
             const relativeX = (event.clientX - rect.left) / rect.width - 0.5;
             const relativeY = (event.clientY - rect.top) / rect.height - 0.5;
             const offsetX = relativeX * PARALLAX_RANGE_X;
             const offsetY = relativeY * PARALLAX_RANGE_Y;
-            heroContent.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+            elements.heroContent.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
         };
 
         const onPointerLeave = () => {
-            heroContent.style.transform = "";
+            elements.heroContent.style.transform = "";
         };
 
-        hero.addEventListener("pointermove", onPointerMove, pointerListenerOptions);
-        hero.addEventListener("pointerleave", onPointerLeave, pointerListenerOptions);
-        registerMotionCleanup(() => hero.removeEventListener("pointermove", onPointerMove, pointerListenerOptions));
-        registerMotionCleanup(() => hero.removeEventListener("pointerleave", onPointerLeave, pointerListenerOptions));
+        elements.hero.addEventListener("pointermove", onPointerMove, pointerListenerOptions);
+        elements.hero.addEventListener("pointerleave", onPointerLeave, pointerListenerOptions);
+        registerMotionCleanup(() => elements.hero?.removeEventListener("pointermove", onPointerMove, pointerListenerOptions));
+        registerMotionCleanup(() => elements.hero?.removeEventListener("pointerleave", onPointerLeave, pointerListenerOptions));
         registerMotionCleanup(() => {
-            heroContent.style.transform = "";
+            if (elements.heroContent) {
+                elements.heroContent.style.transform = "";
+            }
         });
     }
 
@@ -352,9 +349,7 @@
         }
         scrollRafScheduled = false;
         elements.body.classList.remove("is-scrolled");
-        if (elements.hero) {
-            elements.hero.style.removeProperty("--scroll-lift");
-        }
+        elements.hero?.style.removeProperty("--scroll-lift");
     }
 
     function bindScrollSoft() {
@@ -411,36 +406,25 @@
         teardownRevealObserver();
         scrollMotionTargets = [];
 
-        if (isReducedMotion()) {
+        if (isReducedMotion() || !("IntersectionObserver" in window)) {
             revealAll();
             return;
         }
 
-        if (!("IntersectionObserver" in window)) {
-            revealAll();
-            return;
-        }
+        revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+                entry.target.classList.add("reveal-in");
+                if (!scrollMotionTargets.includes(entry.target)) {
+                    scrollMotionTargets.push(entry.target);
+                }
+                revealObserver?.unobserve(entry.target);
+            });
+        }, { threshold: REVEAL_THRESHOLD, rootMargin: REVEAL_ROOT_MARGIN });
 
-        revealObserver = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (!entry.isIntersecting) {
-                        return;
-                    }
-
-                    entry.target.classList.add("reveal-in");
-                    if (!scrollMotionTargets.includes(entry.target)) {
-                        scrollMotionTargets.push(entry.target);
-                    }
-                    revealObserver.unobserve(entry.target);
-                });
-            },
-            { threshold: REVEAL_THRESHOLD, rootMargin: REVEAL_ROOT_MARGIN }
-        );
-
-        elements.revealTargets.forEach((target) => {
-            revealObserver.observe(target);
-        });
+        elements.revealTargets.forEach((target) => revealObserver?.observe(target));
     }
 
     function applyReducedMotionState() {
@@ -455,7 +439,6 @@
             applyReducedMotionState();
             return;
         }
-
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 elements.body.classList.remove("anim-init");
@@ -492,7 +475,6 @@
 
         addMediaQueryChangeListener(motionMedia, onMotionChange);
         addMediaQueryChangeListener(coarsePointerMedia, onCoarsePointerChange);
-
         window.addEventListener("pagehide", runCleanup, { once: true });
     }
 

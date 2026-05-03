@@ -49,7 +49,7 @@
             views: "阅读",
             readArticle: "阅读文章",
             noArticles: "暂无文章。",
-            noMatch: '未找到与“{query}”相关的文章。',
+            noMatch: "未找到与“{query}”相关的文章。",
             result: "条结果",
             results: "条结果",
             sortLatest: "最新",
@@ -73,6 +73,7 @@
     };
 
     let filterTimer = null;
+    let languageHandlerBound = false;
 
     const formatDate = (value) => utils.formatDate?.(value, {
         year: "numeric",
@@ -132,8 +133,9 @@
     }
 
     function renderEmptyState(query) {
+        const safeQuery = escape(query);
         const message = query
-            ? t("noMatch").replace("{query}", escape(query))
+            ? t("noMatch").replace("{query}", safeQuery)
             : t("noArticles");
         articleList.innerHTML = `<div class="empty-state">${message}</div>`;
     }
@@ -146,7 +148,6 @@
         if (!query) {
             return articles;
         }
-
         return articles.filter((article) => {
             const haystack = [
                 article.title,
@@ -154,7 +155,6 @@
                 article.slug,
                 ...(Array.isArray(article.content) ? article.content : [])
             ].join(" ").toLowerCase();
-
             return haystack.includes(query);
         });
     }
@@ -195,7 +195,6 @@
         if (!searchShell || !searchToggle) {
             return;
         }
-
         searchShell.classList.toggle("is-open", isOpen);
         searchToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
     }
@@ -204,17 +203,13 @@
         if (!articleList) {
             return;
         }
-
         const query = getQuery();
         const articles = sortArticles(filterArticles(resolveBaseArticles(getArticles()), query));
-
         updateSearchStatus(articles.length, query);
-
         if (articles.length === 0) {
             renderEmptyState(query);
             return;
         }
-
         articleList.innerHTML = articles
             .map((article, index) => renderArticleCard(article, index))
             .join("");
@@ -224,7 +219,6 @@
         if (!articleList) {
             return;
         }
-
         clearFilterTimer();
         articleList.classList.add("is-filtering");
         filterTimer = window.setTimeout(() => {
@@ -329,7 +323,6 @@
             if (event.key !== "Escape") {
                 return;
             }
-
             searchInput.value = "";
             renderWithTransition();
             setSearchShellOpen(false);
@@ -345,24 +338,30 @@
         if (!sortSelect) {
             return;
         }
-
         sortSelect.addEventListener("change", renderWithTransition);
+    }
+
+    function bindLanguageChange() {
+        if (languageHandlerBound) {
+            return;
+        }
+        languageHandlerBound = true;
+        window.addEventListener("orian:languagechange", () => {
+            updateStaticCopy();
+            applyRender();
+        });
     }
 
     function init() {
         if (!articleList) {
             return;
         }
-
         updateStaticCopy();
         applyRender();
         bindSearch();
         bindSearchToggle();
         bindSort();
-        window.addEventListener("orian:languagechange", () => {
-            updateStaticCopy();
-            applyRender();
-        });
+        bindLanguageChange();
         window.addEventListener("pagehide", clearFilterTimer, { once: true });
     }
 
