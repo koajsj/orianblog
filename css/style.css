@@ -19,6 +19,16 @@
     --scroll-reveal-distance: 12px;
 }
 
+body.theme-dark {
+    --bg: #0c0c0c;
+    --text: #f3f3f3;
+    --primary: #f3f3f3;
+    --footer-divider: rgba(255, 255, 255, 0.16);
+    --surface-strong: #f2f2f2;
+    --surface-strong-text: #101010;
+    --border: #d8d8d8;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -192,6 +202,39 @@ body.is-scrolled .navbar {
     align-items: center;
     gap: 1rem;
     justify-self: end;
+}
+
+.nav-utilities {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-right: 0.5rem;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+}
+
+.nav-clock,
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    padding: 0.3rem 0.72rem;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.theme-toggle {
+    color: inherit;
+    cursor: pointer;
+    transition: transform var(--transition-fast), background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+}
+
+.theme-toggle:hover {
+    transform: translate3d(0, -1px, 0);
 }
 
 .nav-links-actions {
@@ -785,6 +828,105 @@ body.is-scrolled .navbar {
     padding-block: clamp(2rem, 6vw, 4rem);
 }
 
+.article-comments {
+    margin-top: 1.5rem;
+    padding-top: 1.3rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.2);
+}
+
+.article-comments h2 {
+    font-size: 1rem;
+    margin-bottom: 0.7rem;
+}
+
+.comment-form {
+    display: grid;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+}
+
+.comment-form input,
+.comment-form textarea {
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: inherit;
+    font: inherit;
+    padding: 0.68rem 0.78rem;
+}
+
+.comment-form textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.comment-submit {
+    justify-self: start;
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 999px;
+    background: var(--surface-strong);
+    color: var(--surface-strong-text);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+}
+
+.comment-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.comment-item {
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
+    padding: 0.75rem 0.85rem;
+    background: rgba(255, 255, 255, 0.84);
+    animation: fadeUp 0.42s var(--ease-out-quint) both;
+}
+
+.comment-meta {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(0, 0, 0, 0.56);
+    margin-bottom: 0.35rem;
+}
+
+body.theme-dark .navbar,
+body.theme-dark .reading-progress,
+body.theme-dark .nav-back-btn,
+body.theme-dark .articles-search,
+body.theme-dark .articles-sort,
+body.theme-dark .articles-search-toggle,
+body.theme-dark .articles-archive-link,
+body.theme-dark .article-card,
+body.theme-dark .article-action-btn,
+body.theme-dark .comment-form input,
+body.theme-dark .comment-form textarea,
+body.theme-dark .comment-item,
+body.theme-dark .nav-clock,
+body.theme-dark .theme-toggle {
+    background: rgba(20, 20, 20, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.theme-dark .articles-section .section-container {
+    background: linear-gradient(180deg, rgba(22, 22, 22, 0.98), rgba(0, 0, 0, 0.7));
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+body.theme-dark .article-excerpt,
+body.theme-dark .article-meta,
+body.theme-dark .page-copy,
+body.theme-dark .page-copy-tight,
+body.theme-dark .comment-meta,
+body.theme-dark .empty-state {
+    color: rgba(255, 255, 255, 0.72);
+}
+
 .article-layout {
     max-width: 760px;
 }
@@ -1093,6 +1235,11 @@ body.anim-init .resume-btn {
     transform: translate3d(20px, 0, 0);
 }
 
+body.anim-init .nav-utilities {
+    opacity: 0;
+    transform: translate3d(18px, 0, 0);
+}
+
 body.anim-init .hero-title {
     opacity: 0;
     transform: translate3d(0, 20px, 0);
@@ -1129,6 +1276,10 @@ body.anim-in .nav-container .logo {
 
 body.anim-in .resume-btn {
     animation: fadeSlideFromRight 0.55s var(--ease-out-quint) 0.12s forwards;
+}
+
+body.anim-in .nav-utilities {
+    animation: fadeSlideFromRight 0.55s var(--ease-out-quint) 0.18s forwards;
 }
 
 body.anim-in .hero-title {
@@ -1304,6 +1455,7 @@ body.anim-in .footer.reveal {
 
     body.anim-init .nav-container .logo,
     body.anim-init .resume-btn,
+    body.anim-init .nav-utilities,
     body.anim-init .hero-title,
     body.anim-init .hero-line-inner,
     body.anim-init .social-icons a {
@@ -1324,6 +1476,7 @@ body.anim-in .footer.reveal {
 
     body.anim-in .nav-container .logo,
     body.anim-in .resume-btn,
+    body.anim-in .nav-utilities,
     body.anim-in .hero-title,
     body.anim-in .hero-line-inner,
     body.anim-in .social-icons a,

@@ -19,6 +19,7 @@
         magneticTargets: ".social-icons a, .resume-btn",
         revealTargets: ".reveal"
     };
+    const THEME_STORAGE_KEY = "orian_blog_theme";
 
     const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
     const coarsePointerMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
@@ -37,6 +38,7 @@
     const cleanupTasks = [];
     const motionInteractionCleanups = [];
     let revealObserver = null;
+    let clockTimer = null;
 
     const scrollListenerOptions = { passive: true };
     let scrollRafScheduled = false;
@@ -44,6 +46,92 @@
 
     function registerCleanup(callback) {
         cleanupTasks.push(callback);
+    }
+
+    function getStoredTheme() {
+        try {
+            return window.localStorage?.getItem(THEME_STORAGE_KEY) || "";
+        } catch {
+            return "";
+        }
+    }
+
+    function setStoredTheme(theme) {
+        try {
+            window.localStorage?.setItem(THEME_STORAGE_KEY, theme);
+        } catch {
+            // Ignore storage errors.
+        }
+    }
+
+    function formatClock() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, "0");
+        const mm = String(now.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}`;
+    }
+
+    function applyTheme(theme) {
+        elements.body.classList.toggle("theme-dark", theme === "dark");
+    }
+
+    function initThemeAndClock() {
+        const navActions = document.querySelector(".nav-actions");
+        if (!navActions) {
+            return;
+        }
+
+        const shell = document.createElement("div");
+        shell.className = "nav-utilities";
+
+        const clock = document.createElement("span");
+        clock.className = "nav-clock";
+        clock.setAttribute("aria-label", "Current time");
+        clock.textContent = formatClock();
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "theme-toggle";
+
+        const syncToggleLabel = () => {
+            const isDark = elements.body.classList.contains("theme-dark");
+            toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+            toggle.textContent = isDark ? "Light" : "Dark";
+        };
+
+        const preferredTheme = getStoredTheme();
+        if (preferredTheme === "dark" || preferredTheme === "light") {
+            applyTheme(preferredTheme);
+        } else {
+            applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        }
+        syncToggleLabel();
+
+        const onToggleClick = () => {
+            const nextTheme = elements.body.classList.contains("theme-dark") ? "light" : "dark";
+            applyTheme(nextTheme);
+            setStoredTheme(nextTheme);
+            syncToggleLabel();
+        };
+
+        toggle.addEventListener("click", onToggleClick);
+        registerCleanup(() => toggle.removeEventListener("click", onToggleClick));
+
+        shell.append(clock, toggle);
+        navActions.prepend(shell);
+
+        const updateClock = () => {
+            clock.textContent = formatClock();
+        };
+
+        updateClock();
+        clockTimer = window.setInterval(updateClock, 1000 * 15);
+        registerCleanup(() => {
+            if (clockTimer) {
+                window.clearInterval(clockTimer);
+                clockTimer = null;
+            }
+        });
     }
 
     function registerMotionCleanup(callback) {
@@ -357,6 +445,7 @@
     }
 
     function init() {
+        initThemeAndClock();
         setRevealDelays();
         bindAnchorScrolling();
         setupMotionInteractions();

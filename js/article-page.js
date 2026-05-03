@@ -6,6 +6,7 @@
     const progressBar = document.querySelector("[data-reading-progress-bar]");
     const utils = window.OrianBlog || {};
     const scrollListenerOptions = { passive: true };
+    const COMMENT_STORAGE_KEY = "orian_blog_comments_v1";
     let progressCleanup = null;
     let interactionCleanup = null;
 
@@ -65,6 +66,15 @@
                 <article class="article-body reveal">
                     ${content}
                 </article>
+                <section class="article-comments reveal" data-comment-shell>
+                    <h2>Comments</h2>
+                    <form class="comment-form" data-comment-form>
+                        <input type="text" name="author" maxlength="28" placeholder="Your name" required>
+                        <textarea name="content" maxlength="500" placeholder="Write a comment..." required></textarea>
+                        <button type="submit" class="comment-submit">Post comment</button>
+                    </form>
+                    <div class="comment-list" data-comment-list></div>
+                </section>
             </div>
         `;
     }
@@ -173,6 +183,89 @@
             likeBtn?.removeEventListener("click", onLike);
             bookmarkBtn?.removeEventListener("click", onBookmark);
             copyHandlers.forEach(({ button, handler }) => button.removeEventListener("click", handler));
+        };
+    }
+
+    function getStoredComments() {
+        try {
+            const parsed = JSON.parse(window.localStorage?.getItem(COMMENT_STORAGE_KEY) || "{}");
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function setStoredComments(allComments) {
+        try {
+            window.localStorage?.setItem(COMMENT_STORAGE_KEY, JSON.stringify(allComments));
+        } catch {
+            // Ignore storage errors.
+        }
+    }
+
+    function getCommentsBySlug(slug) {
+        const all = getStoredComments();
+        const list = all[slug];
+        return Array.isArray(list) ? list : [];
+    }
+
+    function saveComment(slug, comment) {
+        const all = getStoredComments();
+        const list = Array.isArray(all[slug]) ? all[slug] : [];
+        all[slug] = [comment, ...list].slice(0, 50);
+        setStoredComments(all);
+    }
+
+    function bindComments(slug) {
+        const form = root.querySelector("[data-comment-form]");
+        const listNode = root.querySelector("[data-comment-list]");
+        if (!form || !listNode) {
+            return;
+        }
+
+        const escape = (value) => utils.escapeHtml?.(value) ?? String(value ?? "");
+
+        const render = () => {
+            const comments = getCommentsBySlug(slug);
+            if (comments.length === 0) {
+                listNode.innerHTML = `<div class="empty-state">No comments yet.</div>`;
+                return;
+            }
+
+            listNode.innerHTML = comments.map((comment) => `
+                <article class="comment-item">
+                    <p class="comment-meta">${escape(comment.author)} · ${escape(comment.time)}</p>
+                    <p>${escape(comment.content)}</p>
+                </article>
+            `).join("");
+        };
+
+        const onSubmit = (event) => {
+            event.preventDefault();
+            const formData = new FormData(form);
+            const author = String(formData.get("author") || "").trim();
+            const content = String(formData.get("content") || "").trim();
+
+            if (!author || !content) {
+                return;
+            }
+
+            saveComment(slug, {
+                author,
+                content,
+                time: new Date().toLocaleString("zh-CN", { hour12: false })
+            });
+            form.reset();
+            render();
+        };
+
+        form.addEventListener("submit", onSubmit);
+        render();
+
+        const prevCleanup = interactionCleanup;
+        interactionCleanup = () => {
+            prevCleanup?.();
+            form.removeEventListener("submit", onSubmit);
         };
     }
 
@@ -298,6 +391,7 @@
         renderArticle(article);
         bindReadingProgress();
         bindArticleInteractions(article.slug);
+        bindComments(article.slug);
         window.addEventListener("pagehide", () => progressCleanup?.(), { once: true });
         window.addEventListener("pagehide", () => interactionCleanup?.(), { once: true });
     }
