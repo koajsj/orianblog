@@ -686,7 +686,7 @@ body.is-scrolled .navbar {
 }
 
 .articles-search-inline {
-    width: min(24rem, 46vw);
+    width: min(18rem, 34vw);
 }
 
 .articles-home-search:not(.is-open) .articles-search-inline {
