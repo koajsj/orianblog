@@ -11,6 +11,12 @@
     --control-bg-soft: rgba(255, 255, 255, 0.82);
     --control-border: rgba(0, 0, 0, 0.16);
     --control-border-strong: rgba(0, 0, 0, 0.28);
+    --shell-panel-bg: rgba(255, 255, 255, 0.8);
+    --shell-panel-border: rgba(0, 0, 0, 0.08);
+    --shell-panel-shadow: 0 18px 38px rgba(0, 0, 0, 0.04);
+    --hero-wash:
+        radial-gradient(circle at 18% 16%, rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0) 38%),
+        radial-gradient(circle at 84% 12%, rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0) 34%);
     --content-max-width: 1200px;
     --footer-divider: rgba(255, 255, 255, 0.22);
     --surface-strong: #000000;
@@ -38,6 +44,12 @@ body.theme-dark {
     --control-bg-soft: rgba(20, 20, 20, 0.84);
     --control-border: rgba(255, 255, 255, 0.2);
     --control-border-strong: rgba(255, 255, 255, 0.34);
+    --shell-panel-bg: rgba(20, 20, 20, 0.82);
+    --shell-panel-border: rgba(255, 255, 255, 0.14);
+    --shell-panel-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+    --hero-wash:
+        radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0) 38%),
+        radial-gradient(circle at 84% 12%, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0) 34%);
     --footer-divider: rgba(255, 255, 255, 0.16);
     --surface-strong: #000000;
     --surface-strong-text: #ffffff;
@@ -80,9 +92,7 @@ body::before {
     inset: -15vh -10vw auto;
     height: 42vh;
     pointer-events: none;
-    background:
-        radial-gradient(circle at 18% 20%, rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0) 42%),
-        radial-gradient(circle at 82% 12%, rgba(0, 0, 0, 0.045), rgba(255, 255, 255, 0) 34%);
+    background: var(--hero-wash);
     filter: blur(16px);
     opacity: 0.8;
     z-index: -1;
@@ -145,7 +155,7 @@ ul {
     width: 100%;
     flex-shrink: 0;
     padding-block: clamp(1rem, 3vw, 1.5rem);
-    background: rgba(255, 255, 255, 0.78);
+    background: var(--shell-panel-bg);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     border-bottom: 1px solid transparent;
@@ -364,6 +374,7 @@ body.is-scrolled .navbar {
     isolation: isolate;
     overflow: clip;
     contain: layout paint;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
 }
 
 .hero::before,
@@ -467,14 +478,10 @@ body.is-scrolled .navbar {
 
 .articles-section .section-container {
     padding: clamp(1.2rem, 3vw, 2rem);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--shell-panel-border);
     border-radius: 28px;
-    background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(0, 0, 0, 0.015)),
-        rgba(255, 255, 255, 0.96);
-    box-shadow:
-        0 24px 50px rgba(0, 0, 0, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    background: var(--shell-panel-bg);
+    box-shadow: var(--shell-panel-shadow);
 }
 
 .section-heading {
@@ -710,6 +717,7 @@ body.is-scrolled .navbar {
     width: 100%;
     padding-block: clamp(2.5rem, 7vw, 4rem) clamp(1rem, 4vw, 2rem);
     overflow: clip;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
 }
 
 .page-intro-layout {
@@ -845,6 +853,7 @@ body.is-scrolled .navbar {
 .article-shell {
     width: 100%;
     padding-block: clamp(2rem, 6vw, 4rem);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
 }
 
 .article-comments {
@@ -925,8 +934,8 @@ body.theme-dark .theme-toggle {
 }
 
 body.theme-dark .articles-section .section-container {
-    background: linear-gradient(180deg, rgba(22, 22, 22, 0.98), rgba(0, 0, 0, 0.7));
-    border-color: rgba(255, 255, 255, 0.14);
+    background: var(--shell-panel-bg);
+    border-color: var(--shell-panel-border);
 }
 
 body.theme-dark .article-excerpt,
