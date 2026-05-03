@@ -7,6 +7,7 @@
     const warnedDuplicateSlugs = new Set();
     const warnedInvalidArticles = new Set();
     const STORAGE_KEY = "orian_blog_metrics_v1";
+    const LANGUAGE_KEY = "orian_blog_lang_v1";
     const DEFAULT_VIEW_SEED = [8, 6, 10, 5, 2];
 
     function parseDateValue(value) {
@@ -67,19 +68,52 @@
 
         seenSlugs.add(slug);
 
-        const content = Array.isArray(article.content)
-            ? article.content
-                .map((paragraph) => String(paragraph ?? "").trim())
-                .filter(Boolean)
-            : [];
+        const title = normalizeLocalizedValue(article.title, article.title_zh, article.title_en);
+        const excerpt = normalizeLocalizedValue(article.excerpt, article.excerpt_zh, article.excerpt_en);
+        const contentMap = normalizeLocalizedContent(article.content, article.content_zh, article.content_en);
 
         return {
             slug,
-            title: String(article.title ?? slug),
+            title,
             date: typeof article.date === "string" ? article.date : "",
-            excerpt: String(article.excerpt ?? ""),
-            content,
+            excerpt,
+            content: contentMap,
             views: Number.isFinite(Number(article.views)) ? Number(article.views) : 0
+        };
+    }
+
+    function normalizeLocalizedValue(baseValue, zhValue, enValue) {
+        const toText = (value) => String(value ?? "").trim();
+        if (baseValue && typeof baseValue === "object") {
+            return {
+                zh: toText(baseValue.zh || zhValue || ""),
+                en: toText(baseValue.en || enValue || "")
+            };
+        }
+
+        const baseText = toText(baseValue);
+        return {
+            zh: toText(zhValue || baseText),
+            en: toText(enValue || baseText)
+        };
+    }
+
+    function normalizeLocalizedContent(baseValue, zhValue, enValue) {
+        const normalizeArray = (value) => Array.isArray(value)
+            ? value.map((paragraph) => String(paragraph ?? "").trim()).filter(Boolean)
+            : [];
+
+        if (baseValue && typeof baseValue === "object" && !Array.isArray(baseValue)) {
+            return {
+                zh: normalizeArray(baseValue.zh?.length ? baseValue.zh : zhValue),
+                en: normalizeArray(baseValue.en?.length ? baseValue.en : enValue)
+            };
+        }
+
+        const base = normalizeArray(baseValue);
+        return {
+            zh: normalizeArray(zhValue).length > 0 ? normalizeArray(zhValue) : base,
+            en: normalizeArray(enValue).length > 0 ? normalizeArray(enValue) : base
         };
     }
 
@@ -156,6 +190,45 @@
         return readArticleMetrics(slug);
     }
 
+    function normalizeLanguage(value) {
+        return value === "zh" ? "zh" : "en";
+    }
+
+    function getLanguage() {
+        try {
+            const stored = window.localStorage?.getItem(LANGUAGE_KEY) || "";
+            if (stored === "zh" || stored === "en") {
+                return stored;
+            }
+        } catch {
+            // Ignore storage errors.
+        }
+
+        const htmlLang = String(document.documentElement.lang || "").toLowerCase();
+        if (htmlLang.startsWith("zh")) {
+            return "zh";
+        }
+        return "en";
+    }
+
+    function setLanguage(nextLanguage) {
+        const lang = normalizeLanguage(nextLanguage);
+        try {
+            window.localStorage?.setItem(LANGUAGE_KEY, lang);
+        } catch {
+            // Ignore storage errors.
+        }
+
+        document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+        window.dispatchEvent(new CustomEvent("orian:languagechange", { detail: { lang } }));
+        return lang;
+    }
+
+    function syncDocumentLanguage() {
+        const lang = getLanguage();
+        document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+    }
+
     function incrementArticleView(slug) {
         const current = readArticleMetrics(slug);
         if (current.viewed) {
@@ -190,10 +263,14 @@
 
         ensureInitialMetrics(normalized);
 
+        const language = getLanguage();
         return sortArticlesByDate(normalized).map((article) => {
             const stats = getArticleStats(article.slug);
             return {
                 ...article,
+                title: article.title?.[language] || article.title?.en || article.title?.zh || article.slug,
+                excerpt: article.excerpt?.[language] || article.excerpt?.en || article.excerpt?.zh || "",
+                content: article.content?.[language] || article.content?.en || article.content?.zh || [],
                 views: stats.views,
                 likes: stats.likes,
                 bookmarked: stats.bookmarked
@@ -249,13 +326,16 @@
     Object.assign(utils, {
         escapeHtml,
         formatDate,
+        getLanguage,
         getArticleBySlug,
         getArticleStats,
         getArticles,
         incrementArticleLike,
         incrementArticleView,
+        setLanguage,
         toggleArticleBookmark
     });
 
+    syncDocumentLanguage();
     window.OrianBlog = utils;
 })();

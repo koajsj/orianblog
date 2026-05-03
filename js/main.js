@@ -20,6 +20,7 @@
         revealTargets: ".reveal"
     };
     const THEME_STORAGE_KEY = "orian_blog_theme";
+    const utils = window.OrianBlog || {};
 
     const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
     const coarsePointerMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
@@ -94,12 +95,23 @@
         toggle.type = "button";
         toggle.className = "theme-toggle";
 
+        const languageToggle = document.createElement("button");
+        languageToggle.type = "button";
+        languageToggle.className = "language-toggle";
+
         const syncToggleLabel = () => {
             const isDark = elements.body.classList.contains("theme-dark");
             toggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
             toggle.innerHTML = isDark
                 ? '<i class="fas fa-sun" aria-hidden="true"></i>'
                 : '<i class="fas fa-moon" aria-hidden="true"></i>';
+        };
+
+        const syncLanguageLabel = () => {
+            const lang = utils.getLanguage?.() || "en";
+            const next = lang === "zh" ? "EN" : "中";
+            languageToggle.textContent = next;
+            languageToggle.setAttribute("aria-label", lang === "zh" ? "Switch to English" : "切换到中文");
         };
 
         const preferredTheme = getStoredTheme();
@@ -117,10 +129,25 @@
             syncToggleLabel();
         };
 
-        toggle.addEventListener("click", onToggleClick);
-        registerCleanup(() => toggle.removeEventListener("click", onToggleClick));
+        const onLanguageToggleClick = () => {
+            const current = utils.getLanguage?.() || "en";
+            const next = current === "zh" ? "en" : "zh";
+            utils.setLanguage?.(next);
+        };
 
-        shell.append(clock, toggle);
+        const onLanguageChange = () => {
+            syncLanguageLabel();
+        };
+
+        toggle.addEventListener("click", onToggleClick);
+        languageToggle.addEventListener("click", onLanguageToggleClick);
+        window.addEventListener("orian:languagechange", onLanguageChange);
+        registerCleanup(() => toggle.removeEventListener("click", onToggleClick));
+        registerCleanup(() => languageToggle.removeEventListener("click", onLanguageToggleClick));
+        registerCleanup(() => window.removeEventListener("orian:languagechange", onLanguageChange));
+
+        syncLanguageLabel();
+        shell.append(clock, languageToggle, toggle);
         navActions.prepend(shell);
 
         const updateClock = () => {
