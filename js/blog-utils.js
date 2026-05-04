@@ -260,10 +260,6 @@
 
     function incrementArticleView(slug) {
         const current = readArticleMetrics(slug);
-        if (current.viewed) {
-            return current;
-        }
-
         return writeArticleMetrics(slug, {
             views: current.views + 1,
             viewed: true

@@ -15,7 +15,6 @@
             notFound: "This article does not exist.",
             unavailable: "This article is not available yet.",
             views: "views",
-            minRead: "min read",
             like: "Like",
             save: "Save",
             saved: "Saved",
@@ -39,7 +38,6 @@
             notFound: "该文章不存在。",
             unavailable: "该文章暂不可用。",
             views: "阅读",
-            minRead: "分钟阅读",
             like: "点赞",
             save: "收藏",
             saved: "已收藏",
@@ -93,15 +91,14 @@
         const paragraphs = Array.isArray(article.content) && article.content.length > 0
             ? article.content
             : [tr("unavailable")];
-        const { html: content, tocItems, wordCount } = renderArticleContent(paragraphs);
-        const readingMinutes = Math.max(1, Math.round(wordCount / 220));
+        const { html: content, tocItems } = renderArticleContent(paragraphs);
         const stats = utils.getArticleStats?.(article.slug) ?? { views: article.views || 0, likes: 0, bookmarked: false };
         const adjacent = getAdjacentArticles(article.slug);
 
         root.innerHTML = `
             <div class="section-container article-layout">
                 <header class="article-header reveal">
-                    <p class="article-meta">${formatDate(article.date)} · <span data-views-count>${stats.views || 0}</span> ${tr("views")} · ${readingMinutes} ${tr("minRead")}</p>
+                    <p class="article-meta">${formatDate(article.date)} &middot; <span data-views-count>${stats.views || 0}</span> ${tr("views")}</p>
                     <h1 class="article-page-title">${utils.escapeHtml?.(article.title) ?? article.title}</h1>
                     <p class="article-excerpt">${utils.escapeHtml?.(article.excerpt) ?? article.excerpt}</p>
                     <div class="article-actions" data-article-actions>
@@ -130,7 +127,7 @@
             </div>
         `;
 
-        updateArticleSeo(article, readingMinutes);
+        updateArticleSeo(article);
     }
 
     function renderArticleContent(paragraphs) {
@@ -258,7 +255,7 @@
         `;
     }
 
-    function updateArticleSeo(article, readingMinutes) {
+    function updateArticleSeo(article) {
         const ensureMeta = (attribute, key, value) => {
             if (!value) {
                 return;
@@ -301,8 +298,7 @@
             dateModified: article.date || undefined,
             mainEntityOfPage: canonicalUrl,
             author: { "@type": "Person", name: "Orian" },
-            publisher: { "@type": "Organization", name: "Orian's Blog" },
-            timeRequired: `PT${readingMinutes}M`
+            publisher: { "@type": "Organization", name: "Orian's Blog" }
         });
     }
 
