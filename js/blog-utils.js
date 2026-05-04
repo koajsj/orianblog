@@ -9,6 +9,8 @@
     const STORAGE_KEY = "orian_blog_metrics_v1";
     const LANGUAGE_KEY = "orian_blog_lang_v1";
     const DEFAULT_VIEW_SEED = [8, 6, 10, 5, 2];
+    let normalizedArticlesCache = null;
+    let normalizedArticlesSource = null;
 
     function parseDateValue(value) {
         if (typeof value !== "string" || !value) {
@@ -197,6 +199,20 @@
         return readArticleMetrics(slug);
     }
 
+    function readArticleMetricsFrom(metrics, slug) {
+        const current = metrics?.[slug];
+        if (!current || typeof current !== "object") {
+            return { views: 0, likes: 0, bookmarked: false, viewed: false };
+        }
+
+        return {
+            views: Number.isFinite(Number(current.views)) ? Number(current.views) : 0,
+            likes: Number.isFinite(Number(current.likes)) ? Number(current.likes) : 0,
+            bookmarked: Boolean(current.bookmarked),
+            viewed: Boolean(current.viewed)
+        };
+    }
+
     function normalizeLanguage(value) {
         return value === "zh" ? "zh" : "en";
     }
@@ -264,21 +280,34 @@
         return writeArticleMetrics(slug, { likes: current.likes + 1 });
     }
 
-    function getArticles() {
+    function getNormalizedArticles() {
         if (!Array.isArray(window.ARTICLES_DATA)) {
-            return [];
+            normalizedArticlesSource = null;
+            normalizedArticlesCache = [];
+            return normalizedArticlesCache;
+        }
+
+        if (normalizedArticlesSource === window.ARTICLES_DATA && Array.isArray(normalizedArticlesCache)) {
+            return normalizedArticlesCache;
         }
 
         const seenSlugs = new Set();
-        const normalized = window.ARTICLES_DATA
-            .map((article, index) => normalizeArticle(article, index, seenSlugs))
-            .filter(Boolean);
+        normalizedArticlesCache = sortArticlesByDate(
+            window.ARTICLES_DATA
+                .map((article, index) => normalizeArticle(article, index, seenSlugs))
+                .filter(Boolean)
+        );
+        normalizedArticlesSource = window.ARTICLES_DATA;
+        ensureInitialMetrics(normalizedArticlesCache);
+        return normalizedArticlesCache;
+    }
 
-        ensureInitialMetrics(normalized);
-
+    function getArticles() {
+        const normalized = getNormalizedArticles();
         const language = getLanguage();
-        return sortArticlesByDate(normalized).map((article) => {
-            const stats = getArticleStats(article.slug);
+        const allMetrics = getStoredMetrics();
+        return normalized.map((article) => {
+            const stats = readArticleMetricsFrom(allMetrics, article.slug);
             return {
                 ...article,
                 title: article.title?.[language] || article.title?.en || article.title?.zh || article.slug,
