@@ -122,7 +122,7 @@
         return `
             <article class="article-card" style="--card-delay: ${index * CARD_STAGGER_STEP_MS}ms">
                 <a class="article-link" href="${getArticleLink(article)}">
-                    <p class="article-meta">${formatDate(article.date)} · ${article.views || 0} ${t("views")}</p>
+                    <p class="article-meta">${formatDate(article.date)} &middot; ${article.views || 0} ${t("views")}</p>
                     <h3 class="article-card-title">${escape(article.title)}</h3>
                     <p class="article-excerpt">${escape(article.excerpt)}</p>
                     <span class="article-cta">${t("readArticle")}</span>
@@ -182,7 +182,7 @@
         }
 
         if (getLang() === "zh") {
-            searchStatus.textContent = `${count}${getView() === "archive" ? "篇文章" : "篇最新"}`;
+            searchStatus.textContent = `${count}${getView() === "archive" ? "篇文章" : "篇最新文章"}`;
             return;
         }
 

@@ -409,7 +409,7 @@
             }
             listNode.innerHTML = comments.map((comment) => `
                 <article class="comment-item">
-                    <p class="comment-meta">${escape(comment.author)} · ${escape(comment.time)}</p>
+                    <p class="comment-meta">${escape(comment.author)} &middot; ${escape(comment.time)}</p>
                     <p>${escape(comment.content)}</p>
                 </article>
             `).join("");
