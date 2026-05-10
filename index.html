@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="Orian's personal blog for motion notes and frontend writing.">
+    <meta name="description" content="记录前端、界面和轻量交互，把页面写得更有节奏，也更能真正使用。">
     <title>Orian's Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <noscript>
         <style>
             body.anim-init .nav-container .logo,
             body.anim-init .resume-btn,
             body.anim-init .hero-title,
+            body.anim-init .hero-copy,
+            body.anim-init .hero-spotlight,
             body.anim-init .hero-line-inner,
-            body.anim-init .social-icons a {
+            body.anim-init .stat-card,
+            body.anim-init .footer.reveal {
                 opacity: 1 !important;
                 transform: none !important;
             }
@@ -31,45 +34,82 @@
         </style>
     </noscript>
 </head>
-<body class="anim-init">
+<body class="anim-init home-page">
     <nav class="navbar" aria-label="Main navigation">
         <div class="nav-container">
             <a href="index.html" class="logo">
-                <i class="fas fa-code" aria-hidden="true"></i> Orian's Blog
+                <i class="fas fa-code" aria-hidden="true"></i>
+                Orian's Blog
             </a>
             <ul class="nav-links">
-                <li>
-                    <a href="articles.html">Articles</a>
-                </li>
+                <li><a href="articles.html">文章</a></li>
             </ul>
             <div class="nav-actions">
                 <ul class="nav-links nav-links-actions">
-                <li>
-                    <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="Open the site repository on GitHub">GitHub <i class="fab fa-github" aria-hidden="true"></i></a>
-                </li>
+                    <li>
+                        <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="Open the site repository on GitHub">
+                            GitHub
+                            <i class="fab fa-github" aria-hidden="true"></i>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <main id="main-content">
-        <header class="hero">
+        <header class="hero hero-home">
             <div class="hero-container">
-                <div class="hero-content">
-                    <h1 class="hero-title" aria-label="Hello I'm Orian.">
-                        <span class="hero-line">
-                            <span class="hero-line-inner">Hello</span>
-                        </span>
-                        <span class="hero-line">
-                            <span class="hero-line-inner">I'm <span class="fw-bold">Orian.</span></span>
-                        </span>
-                    </h1>
-                    <ul class="social-icons">
-                        <li>
-                            <a href="#" aria-label="Telegram coming soon"><i class="fab fa-telegram" aria-hidden="true"></i></a>
-                        </li>
-                    </ul>
+                <div class="hero-content hero-grid">
+                    <section class="hero-copy reveal">
+                        <p class="hero-kicker" data-hero-kicker>Frontend / Motion / Notes</p>
+                        <h1 class="hero-title" aria-label="把界面写得更有呼吸感">
+                            <span class="hero-line">
+                                <span class="hero-line-inner">把界面</span>
+                            </span>
+                            <span class="hero-line">
+                                <span class="hero-line-inner">写得更有 <span class="fw-bold">呼吸感</span></span>
+                            </span>
+                        </h1>
+                        <p class="hero-description" data-site-description>记录前端、界面和轻量交互，把页面写得更有节奏，也更能真正使用。</p>
+                        <div class="hero-actions">
+                            <a href="articles.html" class="button button-primary" data-primary-cta>查看全部文章</a>
+                            <a href="#articles" class="button button-secondary" data-secondary-cta>浏览最新更新</a>
+                        </div>
+                        <ul class="hero-signal-list" aria-label="Site highlights">
+                            <li class="hero-signal" data-hero-signal>双语内容</li>
+                            <li class="hero-signal" data-hero-signal>轻量动效</li>
+                            <li class="hero-signal" data-hero-signal>真实交互</li>
+                        </ul>
+                    </section>
+
+                    <aside class="hero-spotlight reveal">
+                        <div class="hero-spotlight-intro">
+                            <p class="section-kicker section-kicker-strong" data-featured-title>当前推荐</p>
+                            <p class="hero-spotlight-copy" data-featured-description>从最近的更新里先读一篇，快速了解这个站点的写作方向。</p>
+                        </div>
+                        <div data-featured-article-shell></div>
+                    </aside>
                 </div>
+
+                <section class="site-stats reveal" aria-label="Site stats">
+                    <article class="stat-card" data-site-stat="articles">
+                        <span class="stat-value" data-site-stat-value>0</span>
+                        <span class="stat-label" data-site-stat-label>文章</span>
+                    </article>
+                    <article class="stat-card" data-site-stat="views">
+                        <span class="stat-value" data-site-stat-value>0</span>
+                        <span class="stat-label" data-site-stat-label>累计阅读</span>
+                    </article>
+                    <article class="stat-card" data-site-stat="likes">
+                        <span class="stat-value" data-site-stat-value>0</span>
+                        <span class="stat-label" data-site-stat-label>累计喜欢</span>
+                    </article>
+                    <article class="stat-card" data-site-stat="bookmarks">
+                        <span class="stat-value" data-site-stat-value>0</span>
+                        <span class="stat-label" data-site-stat-label>已收藏</span>
+                    </article>
+                </section>
             </div>
         </header>
 
@@ -77,22 +117,22 @@
             <div class="section-container">
                 <div class="section-heading-row">
                     <div class="section-heading">
-                        <p class="section-kicker section-kicker-strong">ARTICLES</p>
-                        <h2 id="articles-title" class="section-title">Latest writing.</h2>
+                        <p class="section-kicker section-kicker-strong">最新文章</p>
+                        <h2 id="articles-title" class="section-title">最新写作</h2>
                     </div>
                     <div class="articles-home-tools">
                         <label class="articles-sort articles-sort-home" for="home-articles-sort">
                             <select id="home-articles-sort" data-articles-sort>
-                                <option value="latest">Latest</option>
-                                <option value="views">Most viewed</option>
-                                <option value="likes">Most liked</option>
+                                <option value="latest">最新发布</option>
+                                <option value="views">最多阅读</option>
+                                <option value="likes">最多喜欢</option>
                             </select>
                         </label>
                         <div class="articles-home-search" data-articles-search-shell>
                             <button
                                 type="button"
                                 class="articles-search-toggle"
-                                aria-label="Search recent articles"
+                                aria-label="搜索最近文章"
                                 aria-expanded="false"
                                 aria-controls="home-articles-search"
                                 data-articles-search-toggle
@@ -108,14 +148,16 @@
                                     class="articles-search-input"
                                     type="search"
                                     name="home-search"
-                                    placeholder="Search recent writing"
+                                    placeholder="搜索最近更新"
                                     autocomplete="off"
                                     spellcheck="false"
                                     data-articles-search
                                 >
                             </label>
+                            <button type="button" class="articles-clear-btn" data-articles-clear hidden>清空</button>
                         </div>
-                        <a href="articles.html" class="articles-archive-link">All articles</a>
+                        <p class="articles-search-meta" data-articles-search-status></p>
+                        <a href="articles.html" class="articles-archive-link">全部文章</a>
                     </div>
                 </div>
                 <div class="articles-grid" data-articles-list data-articles-view="recent"></div>
@@ -125,9 +167,12 @@
 
     <footer class="footer bg-dark text-white reveal">
         <div class="section-container footer-flex">
-            <div class="logo"><i class="fas fa-code" aria-hidden="true"></i> Orian's Blog</div>
+            <div class="logo">
+                <i class="fas fa-code" aria-hidden="true"></i>
+                Orian's Blog
+            </div>
             <div>
-                <p>Designed by <a href="#">Orian</a></p>
+                <p data-footer-note>一个持续迭代中的静态博客实验。</p>
             </div>
         </div>
     </footer>

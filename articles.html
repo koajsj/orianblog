@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="description" content="All articles from Orian's Blog.">
-    <title>Articles | Orian's Blog</title>
+    <meta name="description" content="按主题、表达方式或正文关键词筛选全部写作。">
+    <title>文章归档 | Orian's Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="subpage">
+<body class="subpage anim-init">
     <nav class="navbar navbar-subpage" aria-label="Main navigation">
         <div class="nav-container">
             <a href="index.html" class="nav-back-btn" aria-label="Return to home">
                 <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                Back
+                返回
             </a>
             <a href="index.html" class="logo">
-                <i class="fas fa-code" aria-hidden="true"></i> Orian's Blog
+                <i class="fas fa-code" aria-hidden="true"></i>
+                Orian's Blog
             </a>
             <div class="nav-actions">
                 <ul class="nav-links nav-links-actions">
                     <li>
-                        <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="Open the site repository on GitHub">GitHub <i class="fab fa-github" aria-hidden="true"></i></a>
+                        <a href="https://github.com/koajsj/orianblog" class="resume-btn" target="_blank" rel="noopener noreferrer" aria-label="Open the site repository on GitHub">
+                            GitHub
+                            <i class="fab fa-github" aria-hidden="true"></i>
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -34,16 +38,17 @@
     <main id="main-content">
         <section class="page-intro reveal">
             <div class="section-container page-intro-layout">
-                <h1 class="page-title page-title-xl">Articles</h1>
-                <p class="page-copy page-copy-tight">All writing in one place.</p>
+                <p class="section-kicker section-kicker-strong" data-archive-kicker>Archive</p>
+                <h1 class="page-title page-title-xl">文章归档</h1>
+                <p class="page-copy page-copy-tight">按主题、表达方式或正文关键词筛选全部写作。</p>
             </div>
         </section>
 
         <section class="articles-section reveal" aria-labelledby="articles-archive-title">
             <div class="section-container">
-                <h2 id="articles-archive-title" class="sr-only">Article archive</h2>
+                <h2 id="articles-archive-title" class="sr-only">文章归档列表</h2>
                 <div class="articles-toolbar">
-                    <label class="articles-search" for="articles-search">
+                    <label class="articles-search articles-search-wide" for="articles-search">
                         <span class="articles-search-icon" aria-hidden="true">
                             <i class="fas fa-search"></i>
                         </span>
@@ -52,18 +57,20 @@
                             class="articles-search-input"
                             type="search"
                             name="search"
-                            placeholder="Search articles"
+                            placeholder="搜索文章标题、摘要或正文"
                             autocomplete="off"
                             spellcheck="false"
                             data-articles-search
                         >
+                        <button type="button" class="articles-clear-btn" data-articles-clear hidden>清空</button>
                     </label>
                     <div class="articles-toolbar-side">
+                        <p class="articles-filter-hint" data-articles-filter-hint>可搜索标题、摘要、slug 和正文内容</p>
                         <label class="articles-sort" for="articles-sort">
                             <select id="articles-sort" data-articles-sort>
-                                <option value="latest">Latest</option>
-                                <option value="views">Most viewed</option>
-                                <option value="likes">Most liked</option>
+                                <option value="latest">最新发布</option>
+                                <option value="views">最多阅读</option>
+                                <option value="likes">最多喜欢</option>
                             </select>
                         </label>
                         <p class="articles-search-meta" data-articles-search-status></p>
@@ -76,9 +83,12 @@
 
     <footer class="footer bg-dark text-white reveal">
         <div class="section-container footer-flex">
-            <div class="logo"><i class="fas fa-code" aria-hidden="true"></i> Orian's Blog</div>
+            <div class="logo">
+                <i class="fas fa-code" aria-hidden="true"></i>
+                Orian's Blog
+            </div>
             <div>
-                <p>Designed by <a href="#">Orian</a></p>
+                <p data-footer-note>一个持续迭代中的静态博客实验。</p>
             </div>
         </div>
     </footer>

@@ -1,81 +1,67 @@
 # Orian's Blog
 
-一个基于原生 `HTML + CSS + JavaScript` 的静态博客网站。
+一个基于原生 `HTML + CSS + JavaScript` 的静态博客项目，重点放在文章阅读体验、按钮反馈、页面层级和轻量动效。
 
-## 当前功能
-- 首页与文章归档页（Home / Articles）
-- 文章搜索与排序（最新 / 阅读量 / 点赞）
-- 文章详情页阅读进度条、上一篇/下一篇
-- 阅读量、点赞、收藏（`localStorage`）
-- 评论功能（`localStorage`）
-- 深色/浅色模式切换（太阳/月亮）
-- 中英切换（语言切换后刷新加载，稳定模式）
-- 顶栏实时时间（`HH:mm`）
-- TOC 目录（识别 `##` / `###`）
-- 代码块复制与轻量高亮
-- 动态 SEO（`description`、`og:*`、`twitter:*`、`JSON-LD`）
-- 统一滚动与悬浮动画风格（桌面/移动端）
+## 当前能力
+
+- 首页带有精选文章、站点统计卡片和双层 CTA
+- 文章列表支持搜索、排序、结果状态反馈和 `/` 快捷聚焦搜索
+- 文章详情页支持阅读进度、目录高亮、点赞、收藏、复制链接和本地评论
+- 中英文双语内容切换
+- 深浅色主题切换
+- SEO 元信息和 `JSON-LD` 文章结构化数据
+- 全站轻量滚动显现、悬停反馈和 reduced-motion 回退
 
 ## 项目结构
+
 - `index.html`：首页
-- `articles.html`：文章列表页
+- `articles.html`：文章归档页
 - `article.html`：文章详情页
-- `css/style.css`：全站样式与动画
-- `js/main.js`：全站交互（主题、时间、语言切换等）
+- `css/style.css`：全站样式、布局和动画
 - `js/articles-data.js`：文章数据源
-- `js/blog-utils.js`：数据规范化、统计指标与语言状态
-- `js/articles-home.js`：列表渲染、搜索、排序
-- `js/article-page.js`：详情页渲染与交互
-- `new-article.ps1`：新增文章脚本
+- `js/blog-utils.js`：文章规范化、日期格式化、统计状态和语言状态
+- `js/articles-home.js`：首页/归档页渲染、搜索、排序和文案切换
+- `js/article-page.js`：详情页渲染、目录、评论和交互
+- `js/main.js`：主题切换、语言切换、全站动效和滚动行为
 
 ## 本地运行
-这是纯静态项目，直接打开 `index.html` 即可。  
-建议使用本地静态服务器预览（例如 VS Code Live Server）。
 
-## 新增文章（基础格式）
-编辑 `js/articles-data.js`，向 `window.ARTICLES_DATA` 追加：
+这是纯静态项目，直接打开 `index.html` 即可预览。
+更推荐使用本地静态服务器，例如 VS Code Live Server，避免本地文件模式下的浏览器差异。
+
+## 新增文章
+
+编辑 `js/articles-data.js`，向 `window.ARTICLES_DATA` 追加对象：
 
 ```js
 {
   slug: "my-post",
-  title: "My Post",
-  date: "2026-05-03",
-  excerpt: "Short summary...",
-  content: [
-    "Paragraph 1",
-    "## Section",
-    "Paragraph 2",
-    "```",
-    "const a = 1;",
-    "```"
-  ]
+  title: {
+    zh: "中文标题",
+    en: "English title"
+  },
+  excerpt: {
+    zh: "中文摘要",
+    en: "English excerpt"
+  },
+  content: {
+    zh: ["第一段", "## 小节标题", "第二段"],
+    en: ["Paragraph one", "## Section title", "Paragraph two"]
+  },
+  date: "2026-05-10"
 }
 ```
 
 规则：
+
 - `slug` 必须唯一
 - `date` 使用 `YYYY-MM-DD`
-- `content` 每项渲染为段落；`##` / `###` 生成目录；`` ``` `` 包裹代码块
+- `content` 中 `##` 和 `###` 会自动生成目录
+- 使用单独一行的 ````` `` 标记代码块开始和结束
 
-## 双语文章（推荐格式）
-支持中英双语字段：
+## 统计与状态
 
-```js
-{
-  slug: "motion-notes",
-  title: { zh: "为什么动效要保持克制", en: "Why the motion stays light" },
-  excerpt: { zh: "中文摘要", en: "English excerpt" },
-  content: {
-    zh: ["中文段落1", "中文段落2"],
-    en: ["English paragraph 1", "English paragraph 2"]
-  },
-  date: "2026-05-02"
-}
-```
-
-站点会根据当前语言自动读取对应内容。
-
-## 快速新增文章（脚本）
-```powershell
-.\new-article.ps1 -Title "My New Article"
-```
+- 阅读、点赞、收藏保存在 `localStorage` 的 `orian_blog_metrics_v1`
+- 语言状态保存在 `orian_blog_lang_v1`
+- 评论保存在 `orian_blog_comments_v1`
+- 主题保存在 `orian_blog_theme`

@@ -1,14 +1,15 @@
 (() => {
     "use strict";
 
-    const STAGGER_STEP_MS = 90;
+    const STAGGER_STEP_MS = 80;
     const REVEAL_STAGGER_STEP_MS = 70;
-    const CARD_STAGGER_STEP_MS = 85;
-    const PARALLAX_RANGE_X = 14;
-    const PARALLAX_RANGE_Y = 10;
+    const CARD_STAGGER_STEP_MS = 90;
+    const PARALLAX_RANGE_X = 16;
+    const PARALLAX_RANGE_Y = 12;
     const MAGNETIC_STRENGTH = 0.12;
-    const REVEAL_THRESHOLD = 0.03;
-    const REVEAL_ROOT_MARGIN = "0px 0px 18% 0px";
+    const REVEAL_THRESHOLD = 0.04;
+    const REVEAL_ROOT_MARGIN = "0px 0px 14% 0px";
+    const THEME_STORAGE_KEY = "orian_blog_theme";
 
     const selectors = {
         anchors: 'a[href^="#"]',
@@ -16,39 +17,38 @@
         heroContent: ".hero-content",
         heroTitle: ".hero-title",
         articleCards: ".article-card",
-        magneticTargets: ".social-icons a, .resume-btn",
+        magneticTargets: ".button, .resume-btn, .articles-search-toggle, .articles-archive-link, .social-link, .article-action-btn, .comment-submit",
         revealTargets: ".reveal"
     };
 
-    const THEME_STORAGE_KEY = "orian_blog_theme";
-    const utils = window.OrianBlog || {};
-
     const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
     const coarsePointerMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
+    const utils = window.OrianBlog || {};
 
     const elements = {
         body: document.body,
         hero: document.querySelector(selectors.hero),
         heroContent: document.querySelector(selectors.heroContent),
-        heroTitle: document.querySelector(selectors.heroTitle),
-        articleCards: Array.from(document.querySelectorAll(selectors.articleCards)),
-        anchors: Array.from(document.querySelectorAll(selectors.anchors)),
-        magneticTargets: Array.from(document.querySelectorAll(selectors.magneticTargets)),
-        revealTargets: Array.from(document.querySelectorAll(selectors.revealTargets))
+        heroTitle: document.querySelector(selectors.heroTitle)
     };
 
     const cleanupTasks = [];
     const motionInteractionCleanups = [];
+    const scrollListenerOptions = { passive: true };
+    const pointerListenerOptions = { passive: true };
+
     let revealObserver = null;
     let clockTimer = null;
-    let scrollMotionTargets = [];
-
-    const scrollListenerOptions = { passive: true };
-    let scrollRafScheduled = false;
     let scrollHandler = null;
+    let scrollMotionTargets = [];
+    let scrollRafScheduled = false;
 
     function registerCleanup(callback) {
         cleanupTasks.push(callback);
+    }
+
+    function registerMotionCleanup(callback) {
+        motionInteractionCleanups.push(callback);
     }
 
     function getStoredTheme() {
@@ -67,123 +67,17 @@
         }
     }
 
-    function formatClock() {
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, "0");
-        const mm = String(now.getMinutes()).padStart(2, "0");
-        return `${hh}:${mm}`;
-    }
-
     function applyTheme(theme) {
         elements.body.classList.toggle("theme-dark", theme === "dark");
     }
 
-    function initThemeAndClock() {
-        const navActions = document.querySelector(".nav-actions");
-        if (!navActions) {
-            return;
-        }
-
-        const shell = document.createElement("div");
-        shell.className = "nav-utilities";
-
-        const clock = document.createElement("span");
-        clock.className = "nav-clock";
-        clock.setAttribute("aria-label", "Current time");
-        clock.textContent = formatClock();
-
-        const languageToggle = document.createElement("button");
-        languageToggle.type = "button";
-        languageToggle.className = "language-toggle";
-
-        const themeToggle = document.createElement("button");
-        themeToggle.type = "button";
-        themeToggle.className = "theme-toggle";
-
-        const syncThemeLabel = () => {
-            const isDark = elements.body.classList.contains("theme-dark");
-            themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
-            themeToggle.innerHTML = isDark
-                ? '<i class="fas fa-sun" aria-hidden="true"></i>'
-                : '<i class="fas fa-moon" aria-hidden="true"></i>';
-        };
-
-        const syncLanguageLabel = () => {
-            const lang = utils.getLanguage?.() || "en";
-            languageToggle.textContent = lang === "zh" ? "EN" : "中";
-            languageToggle.setAttribute("aria-label", lang === "zh" ? "Switch to English" : "切换到中文");
-        };
-
-        const preferredTheme = getStoredTheme();
-        if (preferredTheme === "dark" || preferredTheme === "light") {
-            applyTheme(preferredTheme);
-        } else {
-            applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-        }
-        syncThemeLabel();
-        syncLanguageLabel();
-
-        const onThemeToggleClick = () => {
-            const nextTheme = elements.body.classList.contains("theme-dark") ? "light" : "dark";
-            applyTheme(nextTheme);
-            setStoredTheme(nextTheme);
-            syncThemeLabel();
-        };
-
-        const onLanguageToggleClick = () => {
-            const current = utils.getLanguage?.() || "en";
-            utils.setLanguage?.(current === "zh" ? "en" : "zh", { notify: false });
-            window.location.reload();
-        };
-
-        themeToggle.addEventListener("click", onThemeToggleClick);
-        languageToggle.addEventListener("click", onLanguageToggleClick);
-
-        registerCleanup(() => themeToggle.removeEventListener("click", onThemeToggleClick));
-        registerCleanup(() => languageToggle.removeEventListener("click", onLanguageToggleClick));
-
-        shell.append(clock, languageToggle, themeToggle);
-        navActions.prepend(shell);
-
-        const updateClock = () => {
-            clock.textContent = formatClock();
-        };
-
-        updateClock();
-        clockTimer = window.setInterval(updateClock, 1000 * 15);
-        registerCleanup(() => {
-            if (clockTimer) {
-                window.clearInterval(clockTimer);
-                clockTimer = null;
-            }
+    function formatClock() {
+        const formatter = new Intl.DateTimeFormat(utils.getLocale?.() || "zh-CN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
         });
-    }
-
-    function registerMotionCleanup(callback) {
-        motionInteractionCleanups.push(callback);
-    }
-
-    function teardownMotionInteractions() {
-        while (motionInteractionCleanups.length > 0) {
-            const callback = motionInteractionCleanups.pop();
-            callback();
-        }
-    }
-
-    function teardownRevealObserver() {
-        if (revealObserver) {
-            revealObserver.disconnect();
-            revealObserver = null;
-        }
-    }
-
-    function runCleanup() {
-        teardownMotionInteractions();
-        teardownRevealObserver();
-        while (cleanupTasks.length > 0) {
-            const callback = cleanupTasks.pop();
-            callback();
-        }
+        return formatter.format(new Date());
     }
 
     function isReducedMotion() {
@@ -202,6 +96,95 @@
             media.addListener(handler);
             registerCleanup(() => media.removeListener(handler));
         }
+    }
+
+    function getTranslatableLabelPair() {
+        const lang = utils.getLanguage?.() || "zh";
+        return lang === "zh"
+            ? {
+                clock: "当前时间",
+                theme: elements.body.classList.contains("theme-dark") ? "切换到浅色模式" : "切换到深色模式",
+                language: "Switch to English"
+            }
+            : {
+                clock: "Current time",
+                theme: elements.body.classList.contains("theme-dark") ? "Switch to light mode" : "Switch to dark mode",
+                language: "切换到中文"
+            };
+    }
+
+    function initThemeAndClock() {
+        const navActions = document.querySelector(".nav-actions");
+        if (!navActions) {
+            return;
+        }
+
+        const shell = document.createElement("div");
+        shell.className = "nav-utilities";
+
+        const clock = document.createElement("span");
+        clock.className = "nav-clock";
+
+        const languageToggle = document.createElement("button");
+        languageToggle.type = "button";
+        languageToggle.className = "language-toggle";
+
+        const themeToggle = document.createElement("button");
+        themeToggle.type = "button";
+        themeToggle.className = "theme-toggle";
+
+        const syncLabels = () => {
+            const labels = getTranslatableLabelPair();
+            clock.setAttribute("aria-label", labels.clock);
+            clock.textContent = formatClock();
+            themeToggle.setAttribute("aria-label", labels.theme);
+            themeToggle.innerHTML = elements.body.classList.contains("theme-dark")
+                ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+                : '<i class="fas fa-moon" aria-hidden="true"></i>';
+            languageToggle.textContent = (utils.getLanguage?.() || "zh") === "zh" ? "EN" : "中";
+            languageToggle.setAttribute("aria-label", labels.language);
+        };
+
+        const preferredTheme = getStoredTheme();
+        if (preferredTheme === "dark" || preferredTheme === "light") {
+            applyTheme(preferredTheme);
+        } else {
+            applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        }
+
+        const onThemeToggleClick = () => {
+            const nextTheme = elements.body.classList.contains("theme-dark") ? "light" : "dark";
+            applyTheme(nextTheme);
+            setStoredTheme(nextTheme);
+            syncLabels();
+        };
+
+        const onLanguageToggleClick = () => {
+            const current = utils.getLanguage?.() || "zh";
+            utils.setLanguage?.(current === "zh" ? "en" : "zh", { notify: false });
+            window.location.reload();
+        };
+
+        themeToggle.addEventListener("click", onThemeToggleClick);
+        languageToggle.addEventListener("click", onLanguageToggleClick);
+        registerCleanup(() => themeToggle.removeEventListener("click", onThemeToggleClick));
+        registerCleanup(() => languageToggle.removeEventListener("click", onLanguageToggleClick));
+
+        shell.append(clock, languageToggle, themeToggle);
+        navActions.prepend(shell);
+        syncLabels();
+
+        const updateClock = () => {
+            clock.textContent = formatClock();
+        };
+
+        clockTimer = window.setInterval(updateClock, 15_000);
+        registerCleanup(() => {
+            if (clockTimer) {
+                window.clearInterval(clockTimer);
+                clockTimer = null;
+            }
+        });
     }
 
     function resolveHashTarget(href) {
@@ -238,24 +221,27 @@
     }
 
     function setRevealDelays() {
-        elements.magneticTargets.forEach((target, index) => {
+        const magneticTargets = Array.from(document.querySelectorAll(selectors.magneticTargets));
+        const revealTargets = Array.from(document.querySelectorAll(selectors.revealTargets));
+        const articleCards = Array.from(document.querySelectorAll(selectors.articleCards));
+
+        magneticTargets.forEach((target, index) => {
             target.style.setProperty("--stagger-delay", `${index * STAGGER_STEP_MS}ms`);
         });
-        elements.revealTargets.forEach((target, index) => {
+        revealTargets.forEach((target, index) => {
             target.style.setProperty("--reveal-delay", `${index * REVEAL_STAGGER_STEP_MS}ms`);
         });
-        elements.articleCards.forEach((target, index) => {
+        articleCards.forEach((target, index) => {
             target.style.setProperty("--card-delay", `${index * CARD_STAGGER_STEP_MS}ms`);
         });
     }
 
     function bindAnchorScrolling() {
-        elements.anchors.forEach((anchor) => {
+        const anchors = Array.from(document.querySelectorAll(selectors.anchors));
+        anchors.forEach((anchor) => {
             const onClick = (event) => {
-                const href = anchor.getAttribute("href");
-                const target = resolveHashTarget(href);
+                const target = resolveHashTarget(anchor.getAttribute("href"));
                 if (!target) {
-                    event.preventDefault();
                     return;
                 }
 
@@ -270,8 +256,6 @@
             registerCleanup(() => anchor.removeEventListener("click", onClick));
         });
     }
-
-    const pointerListenerOptions = { passive: true };
 
     function bindHeroParallax() {
         if (!elements.hero || !elements.heroContent || isReducedMotion() || isCoarsePointer()) {
@@ -307,7 +291,8 @@
             return;
         }
 
-        elements.magneticTargets.forEach((target) => {
+        const targets = Array.from(document.querySelectorAll(selectors.magneticTargets));
+        targets.forEach((target) => {
             target.classList.add("magnetic-hover");
 
             const onPointerMove = (event) => {
@@ -337,6 +322,55 @@
         bindMagneticTargets();
     }
 
+    function teardownMotionInteractions() {
+        while (motionInteractionCleanups.length > 0) {
+            const callback = motionInteractionCleanups.pop();
+            callback();
+        }
+    }
+
+    function revealAll() {
+        document.querySelectorAll(selectors.revealTargets).forEach((target) => {
+            target.classList.add("reveal-in");
+        });
+    }
+
+    function teardownRevealObserver() {
+        if (revealObserver) {
+            revealObserver.disconnect();
+            revealObserver = null;
+        }
+    }
+
+    function bindRevealObserver() {
+        teardownRevealObserver();
+        scrollMotionTargets = [];
+
+        if (isReducedMotion() || !("IntersectionObserver" in window)) {
+            revealAll();
+            return;
+        }
+
+        const revealTargets = Array.from(document.querySelectorAll(selectors.revealTargets));
+        revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+                entry.target.classList.add("reveal-in");
+                if (!scrollMotionTargets.includes(entry.target)) {
+                    scrollMotionTargets.push(entry.target);
+                }
+                revealObserver?.unobserve(entry.target);
+            });
+        }, {
+            threshold: REVEAL_THRESHOLD,
+            rootMargin: REVEAL_ROOT_MARGIN
+        });
+
+        revealTargets.forEach((target) => revealObserver?.observe(target));
+    }
+
     function teardownScrollSoft() {
         if (scrollHandler) {
             window.removeEventListener("scroll", scrollHandler, scrollListenerOptions);
@@ -364,7 +398,7 @@
                 const center = rect.top + rect.height / 2;
                 const offset = (viewportHeight / 2 - center) / viewportHeight;
                 const clamped = Math.max(-1, Math.min(1, offset));
-                const shift = clamped * 6;
+                const shift = clamped * 7;
                 target.style.setProperty("--scroll-shift", `${shift.toFixed(2)}px`);
             });
         };
@@ -374,13 +408,13 @@
                 return;
             }
             scrollRafScheduled = true;
-            requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
                 scrollRafScheduled = false;
                 const y = window.scrollY || document.documentElement.scrollTop;
-                elements.body.classList.toggle("is-scrolled", y > 6);
+                elements.body.classList.toggle("is-scrolled", y > 8);
                 if (elements.hero) {
-                    const cap = isCoarsePointer() ? 6 : 9;
-                    const lift = -Math.min(y * 0.013, cap);
+                    const cap = isCoarsePointer() ? 7 : 10;
+                    const lift = -Math.min(y * 0.014, cap);
                     elements.hero.style.setProperty("--scroll-lift", `${lift}px`);
                 }
                 updateScrollMotion();
@@ -389,37 +423,6 @@
 
         window.addEventListener("scroll", scrollHandler, scrollListenerOptions);
         scrollHandler();
-    }
-
-    function revealAll() {
-        elements.revealTargets.forEach((target) => {
-            target.classList.add("reveal-in");
-        });
-    }
-
-    function bindRevealObserver() {
-        teardownRevealObserver();
-        scrollMotionTargets = [];
-
-        if (isReducedMotion() || !("IntersectionObserver" in window)) {
-            revealAll();
-            return;
-        }
-
-        revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) {
-                    return;
-                }
-                entry.target.classList.add("reveal-in");
-                if (!scrollMotionTargets.includes(entry.target)) {
-                    scrollMotionTargets.push(entry.target);
-                }
-                revealObserver?.unobserve(entry.target);
-            });
-        }, { threshold: REVEAL_THRESHOLD, rootMargin: REVEAL_ROOT_MARGIN });
-
-        elements.revealTargets.forEach((target) => revealObserver?.observe(target));
     }
 
     function applyReducedMotionState() {
@@ -434,8 +437,9 @@
             applyReducedMotionState();
             return;
         }
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
+
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
                 elements.body.classList.remove("anim-init");
                 elements.body.classList.add("anim-in");
             });
@@ -445,6 +449,15 @@
     function syncMotionMode() {
         if (elements.heroTitle) {
             elements.heroTitle.classList.toggle("is-breathing", !isReducedMotion());
+        }
+    }
+
+    function runCleanup() {
+        teardownMotionInteractions();
+        teardownRevealObserver();
+        while (cleanupTasks.length > 0) {
+            const callback = cleanupTasks.pop();
+            callback();
         }
     }
 
