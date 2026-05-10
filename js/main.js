@@ -1,54 +1,31 @@
 (() => {
     "use strict";
 
+    const THEME_STORAGE_KEY = "orian_blog_theme";
     const STAGGER_STEP_MS = 80;
     const REVEAL_STAGGER_STEP_MS = 70;
     const CARD_STAGGER_STEP_MS = 90;
-    const PARALLAX_RANGE_X = 16;
-    const PARALLAX_RANGE_Y = 12;
-    const MAGNETIC_STRENGTH = 0.12;
     const REVEAL_THRESHOLD = 0.04;
     const REVEAL_ROOT_MARGIN = "0px 0px 14% 0px";
-    const THEME_STORAGE_KEY = "orian_blog_theme";
 
     const selectors = {
         anchors: 'a[href^="#"]',
-        hero: ".hero",
-        heroContent: ".hero-content",
-        heroTitle: ".hero-title",
         articleCards: ".article-card",
-        magneticTargets: ".button, .resume-btn, .articles-search-toggle, .articles-archive-link, .social-link, .article-action-btn, .comment-submit",
+        motionTargets: ".button, .resume-btn, .articles-archive-link, .article-action-btn, .comment-submit",
         revealTargets: ".reveal"
     };
 
     const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const coarsePointerMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
     const utils = window.OrianBlog || {};
-
-    const elements = {
-        body: document.body,
-        hero: document.querySelector(selectors.hero),
-        heroContent: document.querySelector(selectors.heroContent),
-        heroTitle: document.querySelector(selectors.heroTitle)
-    };
-
-    const cleanupTasks = [];
-    const motionInteractionCleanups = [];
-    const scrollListenerOptions = { passive: true };
-    const pointerListenerOptions = { passive: true };
+    const body = document.body;
+    const navActions = document.querySelector(".nav-actions");
 
     let revealObserver = null;
     let clockTimer = null;
-    let scrollHandler = null;
-    let scrollMotionTargets = [];
-    let scrollRafScheduled = false;
+    let controlsMounted = false;
 
-    function registerCleanup(callback) {
-        cleanupTasks.push(callback);
-    }
-
-    function registerMotionCleanup(callback) {
-        motionInteractionCleanups.push(callback);
+    function isReducedMotion() {
+        return motionMedia.matches;
     }
 
     function getStoredTheme() {
@@ -68,11 +45,15 @@
     }
 
     function applyTheme(theme) {
-        elements.body.classList.toggle("theme-dark", theme === "dark");
+        body.classList.toggle("theme-dark", theme === "dark");
+    }
+
+    function getCurrentTheme() {
+        return body.classList.contains("theme-dark") ? "dark" : "light";
     }
 
     function formatClock() {
-        const formatter = new Intl.DateTimeFormat(utils.getLocale?.() || "zh-CN", {
+        const formatter = new Intl.DateTimeFormat(utils.getLocale?.() || "en-US", {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false
@@ -80,47 +61,43 @@
         return formatter.format(new Date());
     }
 
-    function isReducedMotion() {
-        return motionMedia.matches;
-    }
+    function getLabels() {
+        const lang = utils.getLanguage?.() || "en";
+        const isDark = getCurrentTheme() === "dark";
 
-    function isCoarsePointer() {
-        return coarsePointerMedia.matches;
-    }
-
-    function addMediaQueryChangeListener(media, handler) {
-        if (typeof media.addEventListener === "function") {
-            media.addEventListener("change", handler);
-            registerCleanup(() => media.removeEventListener("change", handler));
-        } else if (typeof media.addListener === "function") {
-            media.addListener(handler);
-            registerCleanup(() => media.removeListener(handler));
-        }
-    }
-
-    function getTranslatableLabelPair() {
-        const lang = utils.getLanguage?.() || "zh";
-        return lang === "zh"
-            ? {
+        if (lang === "zh") {
+            return {
                 clock: "当前时间",
-                theme: elements.body.classList.contains("theme-dark") ? "切换到浅色模式" : "切换到深色模式",
-                language: "Switch to English"
-            }
-            : {
-                clock: "Current time",
-                theme: elements.body.classList.contains("theme-dark") ? "Switch to light mode" : "Switch to dark mode",
-                language: "切换到中文"
+                language: "切换到英文",
+                languageText: "EN",
+                theme: isDark ? "切换到浅色模式" : "切换到深色模式"
             };
+        }
+
+        return {
+            clock: "Current time",
+            language: "Switch to Chinese",
+            languageText: "中",
+            theme: isDark ? "Switch to light mode" : "Switch to dark mode"
+        };
     }
 
-    function initThemeAndClock() {
-        const navActions = document.querySelector(".nav-actions");
-        if (!navActions) {
+    function resolvePreferredTheme() {
+        const stored = getStoredTheme();
+        if (stored === "dark" || stored === "light") {
+            return stored;
+        }
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    function mountThemeAndLanguageControls() {
+        if (!navActions || controlsMounted) {
             return;
         }
 
         const shell = document.createElement("div");
         shell.className = "nav-utilities";
+        shell.setAttribute("data-global-controls", "true");
 
         const clock = document.createElement("span");
         clock.className = "nav-clock";
@@ -133,114 +110,70 @@
         themeToggle.type = "button";
         themeToggle.className = "theme-toggle";
 
-        const syncLabels = () => {
-            const labels = getTranslatableLabelPair();
-            clock.setAttribute("aria-label", labels.clock);
+        const syncControls = () => {
+            const labels = getLabels();
             clock.textContent = formatClock();
+            clock.setAttribute("aria-label", labels.clock);
+            languageToggle.textContent = labels.languageText;
+            languageToggle.setAttribute("aria-label", labels.language);
             themeToggle.setAttribute("aria-label", labels.theme);
-            themeToggle.innerHTML = elements.body.classList.contains("theme-dark")
+            themeToggle.innerHTML = getCurrentTheme() === "dark"
                 ? '<i class="fas fa-sun" aria-hidden="true"></i>'
                 : '<i class="fas fa-moon" aria-hidden="true"></i>';
-            languageToggle.textContent = (utils.getLanguage?.() || "zh") === "zh" ? "EN" : "中";
-            languageToggle.setAttribute("aria-label", labels.language);
         };
 
-        const preferredTheme = getStoredTheme();
-        if (preferredTheme === "dark" || preferredTheme === "light") {
-            applyTheme(preferredTheme);
-        } else {
-            applyTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-        }
+        languageToggle.addEventListener("click", () => {
+            const current = utils.getLanguage?.() || "en";
+            const next = current === "zh" ? "en" : "zh";
+            utils.setLanguage?.(next, { notify: false });
+            document.documentElement.lang = next === "zh" ? "zh-CN" : "en";
+            window.location.reload();
+        });
 
-        const onThemeToggleClick = () => {
-            const nextTheme = elements.body.classList.contains("theme-dark") ? "light" : "dark";
+        themeToggle.addEventListener("click", () => {
+            const nextTheme = getCurrentTheme() === "dark" ? "light" : "dark";
             applyTheme(nextTheme);
             setStoredTheme(nextTheme);
-            syncLabels();
-        };
-
-        const onLanguageToggleClick = () => {
-            const current = utils.getLanguage?.() || "zh";
-            utils.setLanguage?.(current === "zh" ? "en" : "zh", { notify: false });
-            window.location.reload();
-        };
-
-        themeToggle.addEventListener("click", onThemeToggleClick);
-        languageToggle.addEventListener("click", onLanguageToggleClick);
-        registerCleanup(() => themeToggle.removeEventListener("click", onThemeToggleClick));
-        registerCleanup(() => languageToggle.removeEventListener("click", onLanguageToggleClick));
+            syncControls();
+        });
 
         shell.append(clock, languageToggle, themeToggle);
         navActions.prepend(shell);
-        syncLabels();
+        controlsMounted = true;
 
-        const updateClock = () => {
+        applyTheme(resolvePreferredTheme());
+        syncControls();
+
+        clockTimer = window.setInterval(() => {
             clock.textContent = formatClock();
-        };
+        }, 15000);
 
-        clockTimer = window.setInterval(updateClock, 15_000);
-        registerCleanup(() => {
-            if (clockTimer) {
-                window.clearInterval(clockTimer);
-                clockTimer = null;
-            }
-        });
-    }
-
-    function resolveHashTarget(href) {
-        if (!href || href === "#" || !href.startsWith("#")) {
-            return null;
-        }
-
-        const raw = href.slice(1);
-        if (!raw) {
-            return null;
-        }
-
-        let id;
-        try {
-            id = decodeURIComponent(raw);
-        } catch {
-            return null;
-        }
-
-        const byId = document.getElementById(id);
-        if (byId) {
-            return byId;
-        }
-
-        if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
-            try {
-                return document.querySelector(`#${CSS.escape(id)}`);
-            } catch {
-                return null;
-            }
-        }
-
-        return null;
+        window.addEventListener("orian:languagechange", syncControls);
     }
 
     function setRevealDelays() {
-        const magneticTargets = Array.from(document.querySelectorAll(selectors.magneticTargets));
-        const revealTargets = Array.from(document.querySelectorAll(selectors.revealTargets));
-        const articleCards = Array.from(document.querySelectorAll(selectors.articleCards));
-
-        magneticTargets.forEach((target, index) => {
+        Array.from(document.querySelectorAll(selectors.motionTargets)).forEach((target, index) => {
             target.style.setProperty("--stagger-delay", `${index * STAGGER_STEP_MS}ms`);
         });
-        revealTargets.forEach((target, index) => {
+
+        Array.from(document.querySelectorAll(selectors.revealTargets)).forEach((target, index) => {
             target.style.setProperty("--reveal-delay", `${index * REVEAL_STAGGER_STEP_MS}ms`);
         });
-        articleCards.forEach((target, index) => {
+
+        Array.from(document.querySelectorAll(selectors.articleCards)).forEach((target, index) => {
             target.style.setProperty("--card-delay", `${index * CARD_STAGGER_STEP_MS}ms`);
         });
     }
 
     function bindAnchorScrolling() {
-        const anchors = Array.from(document.querySelectorAll(selectors.anchors));
-        anchors.forEach((anchor) => {
-            const onClick = (event) => {
-                const target = resolveHashTarget(anchor.getAttribute("href"));
+        Array.from(document.querySelectorAll(selectors.anchors)).forEach((anchor) => {
+            anchor.addEventListener("click", (event) => {
+                const href = anchor.getAttribute("href");
+                if (!href || !href.startsWith("#") || href === "#") {
+                    return;
+                }
+
+                const target = document.querySelector(href);
                 if (!target) {
                     return;
                 }
@@ -250,83 +183,8 @@
                     behavior: isReducedMotion() ? "auto" : "smooth",
                     block: "start"
                 });
-            };
-
-            anchor.addEventListener("click", onClick);
-            registerCleanup(() => anchor.removeEventListener("click", onClick));
-        });
-    }
-
-    function bindHeroParallax() {
-        if (!elements.hero || !elements.heroContent || isReducedMotion() || isCoarsePointer()) {
-            return;
-        }
-
-        const onPointerMove = (event) => {
-            const rect = elements.hero.getBoundingClientRect();
-            const relativeX = (event.clientX - rect.left) / rect.width - 0.5;
-            const relativeY = (event.clientY - rect.top) / rect.height - 0.5;
-            const offsetX = relativeX * PARALLAX_RANGE_X;
-            const offsetY = relativeY * PARALLAX_RANGE_Y;
-            elements.heroContent.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
-        };
-
-        const onPointerLeave = () => {
-            elements.heroContent.style.transform = "";
-        };
-
-        elements.hero.addEventListener("pointermove", onPointerMove, pointerListenerOptions);
-        elements.hero.addEventListener("pointerleave", onPointerLeave, pointerListenerOptions);
-        registerMotionCleanup(() => elements.hero?.removeEventListener("pointermove", onPointerMove, pointerListenerOptions));
-        registerMotionCleanup(() => elements.hero?.removeEventListener("pointerleave", onPointerLeave, pointerListenerOptions));
-        registerMotionCleanup(() => {
-            if (elements.heroContent) {
-                elements.heroContent.style.transform = "";
-            }
-        });
-    }
-
-    function bindMagneticTargets() {
-        if (isReducedMotion() || isCoarsePointer()) {
-            return;
-        }
-
-        const targets = Array.from(document.querySelectorAll(selectors.magneticTargets));
-        targets.forEach((target) => {
-            target.classList.add("magnetic-hover");
-
-            const onPointerMove = (event) => {
-                const rect = target.getBoundingClientRect();
-                const offsetX = event.clientX - rect.left - rect.width / 2;
-                const offsetY = event.clientY - rect.top - rect.height / 2;
-                target.style.transform = `translate3d(${offsetX * MAGNETIC_STRENGTH}px, ${offsetY * MAGNETIC_STRENGTH}px, 0)`;
-            };
-
-            const onPointerLeave = () => {
-                target.style.transform = "";
-            };
-
-            target.addEventListener("pointermove", onPointerMove, pointerListenerOptions);
-            target.addEventListener("pointerleave", onPointerLeave, pointerListenerOptions);
-            registerMotionCleanup(() => target.removeEventListener("pointermove", onPointerMove, pointerListenerOptions));
-            registerMotionCleanup(() => target.removeEventListener("pointerleave", onPointerLeave, pointerListenerOptions));
-            registerMotionCleanup(() => {
-                target.classList.remove("magnetic-hover");
-                target.style.transform = "";
             });
         });
-    }
-
-    function setupMotionInteractions() {
-        bindHeroParallax();
-        bindMagneticTargets();
-    }
-
-    function teardownMotionInteractions() {
-        while (motionInteractionCleanups.length > 0) {
-            const callback = motionInteractionCleanups.pop();
-            callback();
-        }
     }
 
     function revealAll() {
@@ -335,32 +193,22 @@
         });
     }
 
-    function teardownRevealObserver() {
-        if (revealObserver) {
-            revealObserver.disconnect();
-            revealObserver = null;
-        }
-    }
-
     function bindRevealObserver() {
-        teardownRevealObserver();
-        scrollMotionTargets = [];
+        revealObserver?.disconnect();
+        revealObserver = null;
 
         if (isReducedMotion() || !("IntersectionObserver" in window)) {
             revealAll();
             return;
         }
 
-        const revealTargets = Array.from(document.querySelectorAll(selectors.revealTargets));
         revealObserver = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (!entry.isIntersecting) {
                     return;
                 }
+
                 entry.target.classList.add("reveal-in");
-                if (!scrollMotionTargets.includes(entry.target)) {
-                    scrollMotionTargets.push(entry.target);
-                }
                 revealObserver?.unobserve(entry.target);
             });
         }, {
@@ -368,135 +216,43 @@
             rootMargin: REVEAL_ROOT_MARGIN
         });
 
-        revealTargets.forEach((target) => revealObserver?.observe(target));
-    }
-
-    function teardownScrollSoft() {
-        if (scrollHandler) {
-            window.removeEventListener("scroll", scrollHandler, scrollListenerOptions);
-            scrollHandler = null;
-        }
-        scrollRafScheduled = false;
-        elements.body.classList.remove("is-scrolled");
-        elements.hero?.style.removeProperty("--scroll-lift");
-    }
-
-    function bindScrollSoft() {
-        teardownScrollSoft();
-        if (isReducedMotion()) {
-            return;
-        }
-
-        const updateScrollMotion = () => {
-            if (scrollMotionTargets.length === 0) {
-                return;
-            }
-
-            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
-            scrollMotionTargets.forEach((target) => {
-                const rect = target.getBoundingClientRect();
-                const center = rect.top + rect.height / 2;
-                const offset = (viewportHeight / 2 - center) / viewportHeight;
-                const clamped = Math.max(-1, Math.min(1, offset));
-                const shift = clamped * 7;
-                target.style.setProperty("--scroll-shift", `${shift.toFixed(2)}px`);
-            });
-        };
-
-        scrollHandler = () => {
-            if (scrollRafScheduled) {
-                return;
-            }
-            scrollRafScheduled = true;
-            window.requestAnimationFrame(() => {
-                scrollRafScheduled = false;
-                const y = window.scrollY || document.documentElement.scrollTop;
-                elements.body.classList.toggle("is-scrolled", y > 8);
-                if (elements.hero) {
-                    const cap = isCoarsePointer() ? 7 : 10;
-                    const lift = -Math.min(y * 0.014, cap);
-                    elements.hero.style.setProperty("--scroll-lift", `${lift}px`);
-                }
-                updateScrollMotion();
-            });
-        };
-
-        window.addEventListener("scroll", scrollHandler, scrollListenerOptions);
-        scrollHandler();
-    }
-
-    function applyReducedMotionState() {
-        elements.body.classList.remove("anim-init");
-        elements.body.classList.add("anim-in");
-        revealAll();
-        scrollMotionTargets = [];
+        document.querySelectorAll(selectors.revealTargets).forEach((target) => {
+            revealObserver?.observe(target);
+        });
     }
 
     function startEntranceAnimation() {
         if (isReducedMotion()) {
-            applyReducedMotionState();
+            body.classList.remove("anim-init");
+            body.classList.add("anim-in");
+            revealAll();
             return;
         }
 
         window.requestAnimationFrame(() => {
             window.requestAnimationFrame(() => {
-                elements.body.classList.remove("anim-init");
-                elements.body.classList.add("anim-in");
+                body.classList.remove("anim-init");
+                body.classList.add("anim-in");
             });
         });
     }
 
-    function syncMotionMode() {
-        if (elements.heroTitle) {
-            elements.heroTitle.classList.toggle("is-breathing", !isReducedMotion());
-        }
-    }
-
-    function runCleanup() {
-        teardownMotionInteractions();
-        teardownRevealObserver();
-        while (cleanupTasks.length > 0) {
-            const callback = cleanupTasks.pop();
-            callback();
-        }
-    }
-
-    function bindMediaListeners() {
-        const onMotionChange = () => {
-            teardownMotionInteractions();
-            teardownScrollSoft();
-            if (isReducedMotion()) {
-                applyReducedMotionState();
-            }
-            bindRevealObserver();
-            setupMotionInteractions();
-            bindScrollSoft();
-            syncMotionMode();
-        };
-
-        const onCoarsePointerChange = () => {
-            teardownMotionInteractions();
-            teardownScrollSoft();
-            setupMotionInteractions();
-            bindScrollSoft();
-        };
-
-        addMediaQueryChangeListener(motionMedia, onMotionChange);
-        addMediaQueryChangeListener(coarsePointerMedia, onCoarsePointerChange);
-        window.addEventListener("pagehide", runCleanup, { once: true });
-    }
-
     function init() {
-        initThemeAndClock();
+        mountThemeAndLanguageControls();
         setRevealDelays();
         bindAnchorScrolling();
-        setupMotionInteractions();
         bindRevealObserver();
-        registerCleanup(teardownScrollSoft);
-        bindScrollSoft();
-        bindMediaListeners();
-        syncMotionMode();
         startEntranceAnimation();
+
+        window.addEventListener("pagehide", () => {
+            revealObserver?.disconnect();
+            revealObserver = null;
+
+            if (clockTimer) {
+                window.clearInterval(clockTimer);
+                clockTimer = null;
+            }
+        }, { once: true });
     }
 
     if (document.readyState === "loading") {

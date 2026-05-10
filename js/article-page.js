@@ -26,7 +26,7 @@
             failed: "失败",
             comments: "评论",
             yourName: "你的名字",
-            writeComment: "写下你的评论……",
+            writeComment: "写下你的评论…",
             postComment: "发布评论",
             noComments: "还没有评论。",
             previous: "上一篇",
@@ -66,7 +66,7 @@
     };
 
     function tr(key) {
-        const lang = utils.getLanguage?.() || "zh";
+        const lang = utils.getLanguage?.() || "en";
         return I18N[lang]?.[key] ?? I18N.en[key] ?? key;
     }
 
@@ -287,6 +287,7 @@
             if (!value) {
                 return;
             }
+
             let node = document.head.querySelector(`meta[${attribute}="${key}"]`);
             if (!node) {
                 node = document.createElement("meta");
@@ -316,6 +317,7 @@
             ld.id = "article-ld-json";
             document.head.appendChild(ld);
         }
+
         ld.textContent = JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Article",
@@ -365,12 +367,14 @@
             if (!copyLinkLabel) {
                 return;
             }
+
             try {
                 await navigator.clipboard.writeText(window.location.href);
                 copyLinkLabel.textContent = tr("copied");
             } catch {
                 copyLinkLabel.textContent = tr("failed");
             }
+
             window.setTimeout(() => {
                 copyLinkLabel.textContent = tr("copyLink");
             }, 1200);
@@ -386,16 +390,19 @@
                 if (!codeNode) {
                     return;
                 }
+
                 try {
                     await navigator.clipboard.writeText(codeNode.textContent || "");
                     button.textContent = tr("copied");
                 } catch {
                     button.textContent = tr("failed");
                 }
+
                 window.setTimeout(() => {
                     button.textContent = tr("copy");
                 }, 1100);
             };
+
             button.addEventListener("click", handler);
             return { button, handler };
         });
@@ -451,6 +458,7 @@
                 listNode.innerHTML = `<div class="empty-state"><strong>${tr("noComments")}</strong></div>`;
                 return;
             }
+
             listNode.innerHTML = comments.map((comment) => `
                 <article class="comment-item">
                     <p class="comment-meta">${escape(comment.author)} · ${escape(comment.time)}</p>
@@ -492,6 +500,7 @@
         if (!progressBar) {
             return;
         }
+
         progressCleanup?.();
         progressCleanup = null;
 
