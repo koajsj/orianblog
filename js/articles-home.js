@@ -209,10 +209,6 @@
                     <h3 class="article-card-title">${escape(article.title)}</h3>
                     <p class="article-excerpt">${escape(article.excerpt)}</p>
                     <div class="article-card-footer">
-                        <div class="article-card-stats">
-                            <span>${article.views || 0} ${t("views")}</span>
-                            <span>${article.likes || 0} ${t("likes")}</span>
-                        </div>
                         <span class="article-cta">${t("readArticle")}</span>
                     </div>
                 </a>
@@ -462,10 +458,6 @@
                 </div>
                 <h2 class="spotlight-title">${escape(featured.title)}</h2>
                 <p class="spotlight-excerpt">${escape(featured.excerpt)}</p>
-                <div class="spotlight-stats">
-                    <span>${featured.views || 0} ${t("views")}</span>
-                    <span>${featured.likes || 0} ${t("likes")}</span>
-                </div>
                 <a class="button button-primary spotlight-link" href="${getArticleLink(featured)}">${t("readArticle")}</a>
             </div>
         `;

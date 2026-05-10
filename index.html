@@ -10,29 +10,6 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;800&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <noscript>
-        <style>
-            body.anim-init .nav-container .logo,
-            body.anim-init .resume-btn,
-            body.anim-init .hero-title,
-            body.anim-init .hero-copy,
-            body.anim-init .hero-spotlight,
-            body.anim-init .hero-line-inner,
-            body.anim-init .stat-card,
-            body.anim-init .footer.reveal {
-                opacity: 1 !important;
-                transform: none !important;
-            }
-            body.anim-init .hero-title .fw-bold {
-                animation: none !important;
-                background-size: 100% 2px !important;
-            }
-            .reveal:not(.reveal-in) {
-                opacity: 1 !important;
-                transform: none !important;
-            }
-        </style>
-    </noscript>
 </head>
 <body class="anim-init home-page">
     <nav class="navbar" aria-label="Main navigation">
@@ -76,40 +53,15 @@
                             <a href="articles.html" class="button button-primary" data-primary-cta>查看全部文章</a>
                             <a href="#articles" class="button button-secondary" data-secondary-cta>浏览最新更新</a>
                         </div>
-                        <ul class="hero-signal-list" aria-label="Site highlights">
-                            <li class="hero-signal" data-hero-signal>双语内容</li>
-                            <li class="hero-signal" data-hero-signal>轻量动效</li>
-                            <li class="hero-signal" data-hero-signal>真实交互</li>
-                        </ul>
                     </section>
 
                     <aside class="hero-spotlight reveal">
                         <div class="hero-spotlight-intro">
                             <p class="section-kicker section-kicker-strong" data-featured-title>当前推荐</p>
-                            <p class="hero-spotlight-copy" data-featured-description>从最近的更新里先读一篇，快速了解这个站点的写作方向。</p>
                         </div>
                         <div data-featured-article-shell></div>
                     </aside>
                 </div>
-
-                <section class="site-stats reveal" aria-label="Site stats">
-                    <article class="stat-card" data-site-stat="articles">
-                        <span class="stat-value" data-site-stat-value>0</span>
-                        <span class="stat-label" data-site-stat-label>文章</span>
-                    </article>
-                    <article class="stat-card" data-site-stat="views">
-                        <span class="stat-value" data-site-stat-value>0</span>
-                        <span class="stat-label" data-site-stat-label>累计阅读</span>
-                    </article>
-                    <article class="stat-card" data-site-stat="likes">
-                        <span class="stat-value" data-site-stat-value>0</span>
-                        <span class="stat-label" data-site-stat-label>累计喜欢</span>
-                    </article>
-                    <article class="stat-card" data-site-stat="bookmarks">
-                        <span class="stat-value" data-site-stat-value>0</span>
-                        <span class="stat-label" data-site-stat-label>已收藏</span>
-                    </article>
-                </section>
             </div>
         </header>
 
@@ -121,42 +73,6 @@
                         <h2 id="articles-title" class="section-title">最新写作</h2>
                     </div>
                     <div class="articles-home-tools">
-                        <label class="articles-sort articles-sort-home" for="home-articles-sort">
-                            <select id="home-articles-sort" data-articles-sort>
-                                <option value="latest">最新发布</option>
-                                <option value="views">最多阅读</option>
-                                <option value="likes">最多喜欢</option>
-                            </select>
-                        </label>
-                        <div class="articles-home-search" data-articles-search-shell>
-                            <button
-                                type="button"
-                                class="articles-search-toggle"
-                                aria-label="搜索最近文章"
-                                aria-expanded="false"
-                                aria-controls="home-articles-search"
-                                data-articles-search-toggle
-                            >
-                                <i class="fas fa-search" aria-hidden="true"></i>
-                            </button>
-                            <label class="articles-search articles-search-inline" for="home-articles-search">
-                                <span class="articles-search-icon" aria-hidden="true">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                                <input
-                                    id="home-articles-search"
-                                    class="articles-search-input"
-                                    type="search"
-                                    name="home-search"
-                                    placeholder="搜索最近更新"
-                                    autocomplete="off"
-                                    spellcheck="false"
-                                    data-articles-search
-                                >
-                            </label>
-                            <button type="button" class="articles-clear-btn" data-articles-clear hidden>清空</button>
-                        </div>
-                        <p class="articles-search-meta" data-articles-search-status></p>
                         <a href="articles.html" class="articles-archive-link">全部文章</a>
                     </div>
                 </div>

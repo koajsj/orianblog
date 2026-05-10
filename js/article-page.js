@@ -18,7 +18,6 @@
             notFound: "这篇文章不存在。",
             unavailable: "这篇文章暂时还没有内容。",
             views: "阅读",
-            likes: "喜欢",
             like: "点赞",
             save: "收藏",
             saved: "已收藏",
@@ -26,7 +25,6 @@
             copied: "已复制",
             failed: "失败",
             comments: "评论",
-            commentCount: "{count} 条评论",
             yourName: "你的名字",
             writeComment: "写下你的评论……",
             postComment: "发布评论",
@@ -34,23 +32,17 @@
             previous: "上一篇",
             next: "下一篇",
             toc: "目录",
-            tocEmpty: "这篇文章没有分节标题。",
             copy: "复制",
             backArticles: "返回文章列表",
             backHome: "返回首页",
             backPrev: "返回上一页",
-            backText: "返回",
-            articleKicker: "文章",
-            sidebarSummary: "快速定位目录、阅读状态和相邻文章。",
-            readingProgress: "阅读进度",
-            shareStatus: "链接已复制到剪贴板"
+            backText: "返回"
         },
         en: {
             siteTitle: "Orian's Blog",
             notFound: "This article does not exist.",
             unavailable: "This article is not available yet.",
             views: "views",
-            likes: "likes",
             like: "Like",
             save: "Save",
             saved: "Saved",
@@ -58,7 +50,6 @@
             copied: "Copied",
             failed: "Failed",
             comments: "Comments",
-            commentCount: "{count} comments",
             yourName: "Your name",
             writeComment: "Write a comment…",
             postComment: "Post comment",
@@ -66,16 +57,11 @@
             previous: "Previous",
             next: "Next",
             toc: "On this page",
-            tocEmpty: "This article does not use section headings.",
             copy: "Copy",
             backArticles: "Return to articles",
             backHome: "Return to home",
             backPrev: "Return to previous page",
-            backText: "Back",
-            articleKicker: "Article",
-            sidebarSummary: "Use the sidebar for quick orientation, reading progress, and adjacent links.",
-            readingProgress: "Reading progress",
-            shareStatus: "Link copied to clipboard"
+            backText: "Back"
         }
     };
 
@@ -120,40 +106,18 @@
         const { html: content, tocItems } = renderArticleContent(paragraphs);
         const stats = utils.getArticleStats?.(article.slug) ?? { views: article.views || 0, likes: article.likes || 0, bookmarked: false };
         const adjacent = getAdjacentArticles(article.slug);
-        const commentCount = getCommentsBySlug(article.slug).length;
 
         root.innerHTML = `
             <div class="section-container article-layout">
-                <aside class="article-sidebar reveal">
-                    <div class="article-sidebar-card">
-                        <p class="article-sidebar-kicker">${tr("articleKicker")}</p>
-                        <p class="article-sidebar-copy">${tr("sidebarSummary")}</p>
-                        <div class="article-sidebar-stats">
-                            <div class="article-mini-stat">
-                                <span class="article-mini-stat-value" data-views-count>${stats.views || 0}</span>
-                                <span class="article-mini-stat-label">${tr("views")}</span>
-                            </div>
-                            <div class="article-mini-stat">
-                                <span class="article-mini-stat-value" data-likes-count>${stats.likes || 0}</span>
-                                <span class="article-mini-stat-label">${tr("likes")}</span>
-                            </div>
-                        </div>
-                        <div class="article-progress-panel">
-                            <span class="article-progress-label">${tr("readingProgress")}</span>
-                            <span class="article-progress-value" data-reading-progress-label>0%</span>
-                        </div>
-                        ${renderToc(tocItems)}
-                    </div>
-                </aside>
                 <div class="article-content-shell">
                     <header class="article-header reveal">
-                        <p class="article-meta">${formatDate(article.date)} · <span data-views-count-inline>${stats.views || 0}</span> ${tr("views")}</p>
+                        <p class="article-meta">${formatDate(article.date)} · <span data-views-count>${stats.views || 0}</span> ${tr("views")}</p>
                         <h1 class="article-page-title">${escape(article.title)}</h1>
                         <p class="article-excerpt">${escape(article.excerpt)}</p>
                         <div class="article-actions" data-article-actions>
                             <button type="button" class="article-action-btn" data-like-btn>
                                 <i class="fas fa-thumbs-up" aria-hidden="true"></i>
-                                ${tr("like")} <span data-likes-count-inline>${stats.likes || 0}</span>
+                                ${tr("like")} <span data-likes-count>${stats.likes || 0}</span>
                             </button>
                             <button type="button" class="article-action-btn ${stats.bookmarked ? "is-active" : ""}" data-bookmark-btn>
                                 <i class="fas fa-bookmark" aria-hidden="true"></i>
@@ -165,12 +129,12 @@
                             </button>
                         </div>
                     </header>
+                    ${renderToc(tocItems)}
                     <article class="article-body reveal">${content}</article>
                     ${renderAdjacentLinks(adjacent)}
-                    <section class="article-comments reveal" data-comment-shell>
+                    <section class="article-comments reveal">
                         <div class="article-comments-head">
                             <h2>${tr("comments")}</h2>
-                            <p class="article-comments-count" data-comments-count>${tr("commentCount").replace("{count}", String(commentCount))}</p>
                         </div>
                         <form class="comment-form" data-comment-form>
                             <input type="text" name="author" maxlength="28" placeholder="${tr("yourName")}" required>
@@ -274,12 +238,7 @@
 
     function renderToc(tocItems) {
         if (!Array.isArray(tocItems) || tocItems.length === 0) {
-            return `
-                <div class="article-toc article-toc-empty">
-                    <p class="article-toc-title">${tr("toc")}</p>
-                    <p class="article-toc-empty-copy">${tr("tocEmpty")}</p>
-                </div>
-            `;
+            return "";
         }
 
         const list = tocItems.map((item) => `
@@ -287,7 +246,7 @@
         `).join("");
 
         return `
-            <nav class="article-toc" aria-label="${tr("toc")}">
+            <nav class="article-toc reveal" aria-label="${tr("toc")}">
                 <p class="article-toc-title">${tr("toc")}</p>
                 <div class="article-toc-list">${list}</div>
             </nav>
@@ -374,8 +333,8 @@
         interactionCleanup?.();
         interactionCleanup = null;
 
-        const viewsBlocks = [...root.querySelectorAll("[data-views-count], [data-views-count-inline]")];
-        const likesBlocks = [...root.querySelectorAll("[data-likes-count], [data-likes-count-inline]")];
+        const viewsNode = root.querySelector("[data-views-count]");
+        const likesNode = root.querySelector("[data-likes-count]");
         const likeBtn = root.querySelector("[data-like-btn]");
         const bookmarkBtn = root.querySelector("[data-bookmark-btn]");
         const bookmarkLabel = root.querySelector("[data-bookmark-label]");
@@ -384,12 +343,12 @@
         const copyButtons = [...root.querySelectorAll("[data-code-copy]")];
 
         const updateStatsView = (stats) => {
-            viewsBlocks.forEach((node) => {
-                node.textContent = String(stats.views || 0);
-            });
-            likesBlocks.forEach((node) => {
-                node.textContent = String(stats.likes || 0);
-            });
+            if (viewsNode) {
+                viewsNode.textContent = String(stats.views || 0);
+            }
+            if (likesNode) {
+                likesNode.textContent = String(stats.likes || 0);
+            }
             if (bookmarkBtn) {
                 bookmarkBtn.classList.toggle("is-active", Boolean(stats.bookmarked));
             }
@@ -406,15 +365,12 @@
             if (!copyLinkLabel) {
                 return;
             }
-
             try {
                 await navigator.clipboard.writeText(window.location.href);
                 copyLinkLabel.textContent = tr("copied");
-                copyLinkBtn?.setAttribute("aria-label", tr("shareStatus"));
             } catch {
                 copyLinkLabel.textContent = tr("failed");
             }
-
             window.setTimeout(() => {
                 copyLinkLabel.textContent = tr("copyLink");
             }, 1200);
@@ -485,14 +441,12 @@
     function bindComments(slug) {
         const form = root.querySelector("[data-comment-form]");
         const listNode = root.querySelector("[data-comment-list]");
-        const countNode = root.querySelector("[data-comments-count]");
-        if (!form || !listNode || !countNode) {
+        if (!form || !listNode) {
             return;
         }
 
         const render = () => {
             const comments = getCommentsBySlug(slug);
-            countNode.textContent = tr("commentCount").replace("{count}", String(comments.length));
             if (comments.length === 0) {
                 listNode.innerHTML = `<div class="empty-state"><strong>${tr("noComments")}</strong></div>`;
                 return;
@@ -542,7 +496,6 @@
         progressCleanup = null;
 
         const articleBody = root.querySelector(".article-body");
-        const progressLabel = root.querySelector("[data-reading-progress-label]");
         if (!articleBody) {
             progressBar.style.transform = "scaleX(0)";
             return;
@@ -564,9 +517,6 @@
             }
 
             progressBar.style.transform = `scaleX(${value})`;
-            if (progressLabel) {
-                progressLabel.textContent = `${Math.round(value * 100)}%`;
-            }
         };
 
         const requestProgressUpdate = () => {
