@@ -27,6 +27,12 @@
             archiveSrTitle: "文章归档",
             allArticles: "全部",
             primaryCta: "文章",
+            homeDescription: "记录代码、界面细节和短篇故事，内容尽量克制、清楚、少噪音。",
+            signalWriting: "写作",
+            signalBilingual: "双语",
+            signalLightweight: "轻量",
+            viewsLabel: "浏览",
+            likesLabel: "喜欢",
             sortLatest: "最新发布",
             sortViews: "最多阅读",
             sortLikes: "最多喜欢",
@@ -51,6 +57,12 @@
             archiveSrTitle: "Article archive",
             allArticles: "All",
             primaryCta: "Articles",
+            homeDescription: "Notes on code, interface craft, and small stories, kept concise enough to read without noise.",
+            signalWriting: "Writing",
+            signalBilingual: "Bilingual",
+            signalLightweight: "Lightweight",
+            viewsLabel: "views",
+            likesLabel: "likes",
             sortLatest: "Latest",
             sortViews: "Most viewed",
             sortLikes: "Most liked",
@@ -138,6 +150,10 @@
                     </div>
                     <h3 class="article-card-title">${escape(article.title)}</h3>
                     <p class="article-excerpt">${escape(article.excerpt)}</p>
+                    <div class="article-card-stats" aria-label="Article stats">
+                        <span>${Number(article.views) || 0} ${t("viewsLabel")}</span>
+                        <span>${Number(article.likes) || 0} ${t("likesLabel")}</span>
+                    </div>
                     <div class="article-card-footer">
                         <span class="article-cta">${t("readArticle")}</span>
                     </div>
@@ -210,6 +226,10 @@
         const srTitle = document.getElementById("articles-archive-title");
         const navArticles = document.querySelector(".nav-links a[href='articles.html']");
         const primaryCta = document.querySelector("[data-primary-cta]");
+        const homeDescription = document.querySelector("[data-home-description]");
+        const signalWriting = document.querySelector('[data-home-signal="writing"]');
+        const signalBilingual = document.querySelector('[data-home-signal="bilingual"]');
+        const signalLightweight = document.querySelector('[data-home-signal="lightweight"]');
 
         if (sortSelect && sortSelect.options.length >= 3) {
             sortSelect.options[0].text = t("sortLatest");
@@ -253,6 +273,22 @@
 
         if (primaryCta) {
             primaryCta.textContent = t("primaryCta");
+        }
+
+        if (homeDescription) {
+            homeDescription.textContent = t("homeDescription");
+        }
+
+        if (signalWriting) {
+            signalWriting.textContent = t("signalWriting");
+        }
+
+        if (signalBilingual) {
+            signalBilingual.textContent = t("signalBilingual");
+        }
+
+        if (signalLightweight) {
+            signalLightweight.textContent = t("signalLightweight");
         }
 
         updateDocumentMeta(isArchive);
