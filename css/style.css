@@ -1034,8 +1034,6 @@ body.theme-dark .button-secondary {
 
 .article-card {
     height: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 20px;
     background: transparent;
     box-shadow: none;
     will-change: transform, opacity;
@@ -1046,7 +1044,6 @@ body.theme-dark .button-secondary {
 
 .article-card:hover {
     transform: translate3d(0, -4px, 0);
-    border-color: var(--border);
 }
 
 .article-link {
@@ -2197,13 +2194,29 @@ body {
     padding: 1.45rem;
     border: 1.5px solid var(--border);
     border-radius: 22px;
-    transition: transform var(--transition-base), background-color var(--transition-base), color var(--transition-base);
+    background: transparent;
+    transition:
+        transform var(--transition-base),
+        border-color var(--transition-base),
+        background-color var(--transition-base),
+        color var(--transition-base);
 }
 
 .article-link:hover {
     transform: translate3d(0, -3px, 0);
-    background: var(--surface-strong);
-    color: var(--surface-strong-text);
+    background: var(--accent-soft);
+}
+
+.article-link:hover .article-card-title,
+.article-link:hover .article-cta {
+    color: var(--text);
+}
+
+.article-link:hover .article-excerpt,
+.article-link:hover .article-meta,
+.article-link:hover .article-chip,
+.article-link:hover .article-card-stats {
+    color: var(--text-soft);
 }
 
 .article-card-title {
@@ -2306,6 +2319,10 @@ body {
 
 .footer-flex > div:last-child {
     display: none;
+}
+
+body.theme-dark .article-link:hover {
+    background: rgba(255, 255, 255, 0.04);
 }
 
 body.theme-dark .article-link:hover,
