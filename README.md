@@ -1,26 +1,36 @@
-﻿# Orian's Blog
+# Orian's Blog
 
-涓€涓熀浜?`HTML + CSS + JavaScript` 鐨勯潤鎬佷釜浜哄崥瀹紝閲嶇偣鏀惧湪绠€娲佺殑闃呰浣撻獙銆佽交閲忎氦浜掑拰浣庣淮鎶ゆ垚鏈€?
-## 涓昏鍔熻兘
+一个基于 `HTML + CSS + JavaScript` 的静态个人博客，重点放在简洁的阅读体验、轻量交互和低维护成本。
 
-- 棣栭〉銆佹枃绔犲垪琛ㄩ〉銆佹枃绔犺鎯呴〉
-- 涓婚鍒囨崲銆佽瑷€鍒囨崲
-- 鏂囩珷鎼滅储銆佹帓搴忋€佹渶杩戞枃绔犲睍绀?- 鏂囩珷璇︽儏椤电洰褰曘€侀槄璇昏繘搴︺€佷笂涓€绡?/ 涓嬩竴绡囥€佺偣璧炪€佹敹钘忋€佸鍒堕摼鎺?- 鏈湴璇勮锛岃瘎璁哄瓨鍌ㄥ湪娴忚鍣?`localStorage`
-- `SEO` 鍏冩暟鎹€乣robots.txt`銆乣sitemap.xml`
-- 鍑忓皯鍔ㄧ敾骞叉壈锛屾敮鎸?`prefers-reduced-motion`
+## 主要功能
 
-## 椤圭洰缁撴瀯
+- 首页、文章列表页、文章详情页
+- 主题切换、语言切换
+- 文章搜索、排序、最近文章展示
+- 文章详情页目录、阅读进度、上一篇 / 下一篇、点赞、收藏、复制链接
+- 本地评论，评论存储在浏览器 `localStorage`
+- `SEO` 元数据、`robots.txt`、`sitemap.xml`
+- 减少动画干扰，支持 `prefers-reduced-motion`
 
-- `index.html`锛氶椤?- `articles.html`锛氭枃绔犲綊妗ｉ〉
-- `article.html`锛氭枃绔犺鎯呴〉
-- `css/style.css`锛氬叏绔欐牱寮?- `js/articles-data.js`锛氭枃绔犳暟鎹簮
-- `js/blog-utils.js`锛氭枃绔犺鑼冨寲銆佹棩鏈熸牸寮忓寲銆佺粺璁′笌璇█鐘舵€?- `js/articles-home.js`锛氶椤靛拰褰掓。椤垫覆鏌撱€佹悳绱€佹帓搴?- `js/article-page.js`锛氭枃绔犺鎯呴〉娓叉煋銆佺洰褰曘€佽瘎璁轰笌浜や簰
-- `js/main.js`锛氫富棰樺垏鎹€佽瑷€鍒囨崲銆佸叏绔欏姩鐢?- `tools/site.mjs`锛氭瀯寤恒€佹鏌ャ€佺敓鎴?`robots.txt` 鍜?`sitemap.xml`
-- `deploy/debian/bootstrap.sh`锛欴ebian VPS 涓€閿儴缃茶剼鏈?
-## 鏈湴棰勮
+## 项目结构
 
-闈欐€佺珯鐐瑰彲浠ョ洿鎺ユ墦寮€ `index.html` 棰勮锛屼篃鍙互鐢ㄦ湰鍦伴潤鎬佹湇鍔″櫒鏌ョ湅銆?
-## 鏋勫缓鑴氭湰
+- `index.html`：首页
+- `articles.html`：文章归档页
+- `article.html`：文章详情页
+- `css/style.css`：全站样式
+- `js/articles-data.js`：文章数据源
+- `js/blog-utils.js`：文章规范化、日期格式化、统计与语言状态
+- `js/articles-home.js`：首页和归档页渲染、搜索、排序
+- `js/article-page.js`：文章详情页渲染、目录、评论与交互
+- `js/main.js`：主题切换、语言切换、全站动画
+- `tools/site.mjs`：构建、检查、生成 `robots.txt` 和 `sitemap.xml`
+- `deploy/debian/bootstrap.sh`：Debian VPS 一键部署脚本
+
+## 本地预览
+
+静态站点可以直接打开 `index.html` 预览，也可以用本地静态服务器查看。
+
+## 构建脚本
 
 ```bash
 npm run build
@@ -28,109 +38,82 @@ npm run lint
 npm test
 ```
 
-- `build`锛氭鏌ユ牳蹇冭剼鏈紝骞剁敓鎴?`robots.txt`銆乣sitemap.xml`
-- `lint`锛氬彧鍋氳娉曟鏌?- `test`锛氬厛鏋勫缓锛屽啀妫€鏌ョ敓鎴愮粨鏋?
-濡傛灉绔欑偣鍩虹鍦板潃鍙樺寲锛屽彲浠ラ€氳繃鐜鍙橀噺鎴栧弬鏁拌鐩栵細
+- `build`：检查核心脚本，并生成 `robots.txt`、`sitemap.xml`
+- `lint`：只做语法检查
+- `test`：先构建，再检查生成结果
+
+如果站点基础地址变化，可以通过环境变量或参数覆盖：
 
 ```bash
 SITE_BASE_URL=https://example.com/blog/ npm run build
 node tools/site.mjs build --base-url=https://example.com/blog/
 ```
 
-## 鍙戝竷鏂囩珷
+## 发布文章
 
-1. 鍦?`js/articles-data.js` 閲屾柊澧炰竴绡囨枃绔犮€?2. 濉ソ `slug`銆佹爣棰樸€佹憳瑕併€佹鏂囧拰鏃ユ湡銆?3. 杩愯 `npm run build`銆?4. 鎻愪氦骞舵帹閫佸埌 GitHub銆?5. 濡傛灉浣跨敤 GitHub Pages锛屾帹閫佸悗浼氳嚜鍔ㄥ彂甯冦€?6. 濡傛灉浣跨敤 Debian VPS锛屾湇鍔″櫒浼氭寜瀹氭椂浠诲姟鑷姩鎷夊彇骞跺埛鏂扮珯鐐广€?
-## 鍩熷悕缃戠珯绠＄悊鐣岄潰濡備綍閰嶇疆
+1. 在 `js/articles-data.js` 里新增一篇文章。
+2. 填好 `slug`、标题、摘要、正文和日期。
+3. 运行 `npm run build`。
+4. 提交并推送到 GitHub。
+5. 如果使用 GitHub Pages，推送后会自动发布。
+6. 如果使用 Debian VPS，服务器会按定时任务自动拉取并刷新站点。
 
-濡傛灉浣犲凡缁忔湁鑷繁鐨勫煙鍚嶏紝闇€瑕佸湪鍩熷悕娉ㄥ唽鍟嗘垨 DNS 绠＄悊鍚庡彴閲屽仛涓嬮潰杩欎簺鎿嶄綔銆傝繖閲岀殑鐩爣涓嶆槸鎶婄珯鐐规敼鎴愬埆鐨勫钩鍙帮紝鑰屾槸鎶婂煙鍚嶈В鏋愬埌褰撳墠 VPS銆?
-### 1. 杩涘叆鍩熷悕鐨?DNS 绠＄悊椤甸潰
+## 域名网站管理界面如何配置
 
-鐧诲綍鍩熷悕娉ㄥ唽鍟嗗悗鍙帮紝鎵惧埌绫讳技涓嬮潰鐨勫叆鍙ｏ細
+如果你已经有自己的域名，需要在域名注册商或 DNS 管理后台里做下面这些操作。这里的目标不是把站点改成别的平台，而是把域名解析到当前 VPS。
 
-- 鍩熷悕绠＄悊
-- DNS 绠＄悊
-- 瑙ｆ瀽璁剧疆
-- 鑷畾涔夎В鏋?
-### 2. 娣诲姞瑙ｆ瀽璁板綍
+### 1. 进入域名的 DNS 管理页面
 
-寤鸿鑷冲皯閰嶇疆涓ゆ潯璁板綍锛?
-- `A` 璁板綍锛氫富鏈鸿褰曞～ `@`锛岃褰曞€煎～浣犵殑 VPS 鍏綉 IP
-- `CNAME` 璁板綍锛氫富鏈鸿褰曞～ `www`锛屾寚鍚?`@`
+登录域名注册商后台，找到类似下面的入口：
 
-濡傛灉浣犵殑娉ㄥ唽鍟嗕笉鏀寔鎶?`www` 鎸囧悜 `@`锛屼篃鍙互鐩存帴缁?`www` 鍐嶅姞涓€鏉?`A` 璁板綍锛屽€煎悓鏍峰～鍐?VPS 鍏綉 IP銆?
-### 3. 鍏堝叧闂唬鐞嗭紝鍐嶇瓑璇佷功绛惧彂
+- 域名管理
+- DNS 管理
+- 解析设置
+- 自定义解析
 
-濡傛灉浣犱娇鐢ㄧ殑鏄?Cloudflare 鎴栫被浼煎甫浠ｇ悊鐨?DNS 鏈嶅姟锛屽缓璁厛鎶婅В鏋愮姸鎬佽鎴?`DNS only`锛屼笉瑕佸厛寮€浠ｇ悊锛?
-- 鍘熷洜鏄娆＄鍙?HTTPS 璇佷功鏃讹紝鏈嶅姟鍣ㄩ渶瑕佺洿鎺ラ獙璇佸煙鍚嶆槸鍚﹁兘瑙ｆ瀽鍒?VPS
-- 绛夎瘉涔︾鍙戞垚鍔熴€佺珯鐐硅兘姝ｅ父璁块棶鍚庯紝鍐嶆寜闇€寮€鍚唬鐞?
-### 4. SSL/TLS 璁剧疆
+### 2. 添加解析记录
 
-濡傛灉浣犱娇鐢?Cloudflare 鎵樼 DNS锛?
-- `SSL/TLS` 妯″紡璁句负 `Full` 鎴?`Full (strict)`
-- 濡傛灉 VPS 涓婂凡缁忔垚鍔熺鍙戜簡璇佷功锛屼紭鍏堜娇鐢?`Full (strict)`
+建议至少配置两条记录：
 
-濡傛灉浣犲彧鏄娇鐢ㄦ櫘閫氭敞鍐屽晢 DNS锛屼笉闇€瑕侀澶栭厤缃?Cloudflare 鐨?SSL 妯″紡锛岀洿鎺ヨ VPS 涓婄殑 `certbot` 绛惧彂璇佷功鍗冲彲銆?
-### 5. 鍩熷悕鍒囨崲鏃惰鍚屾淇敼婧愮爜
+- `A` 记录：主机记录填 `@`，记录值填你的 VPS 公网 IP
+- `CNAME` 记录：主机记录填 `www`，指向 `@`
 
-濡傛灉浣犳妸绔欑偣浠庨粯璁ゅ煙鍚嶅垏鎹㈠埌鑷繁鐨勫煙鍚嶏紝闇€瑕佸悓鏃朵慨鏀硅繖涓や釜浣嶇疆锛?
-- `deploy/debian/bootstrap.sh` 閲岀殑 `DOMAIN`銆乣WWW_DOMAIN`銆乣BASE_URL`
-- `tools/site.mjs` 鐢熸垚鐨勭珯鍐呴摼鎺ュ拰绔欑偣鍦板潃
+如果你的注册商不支持把 `www` 指向 `@`，也可以直接给 `www` 再加一条 `A` 记录，值同样填写 VPS 公网 IP。
 
-鏀瑰畬鍚庨噸鏂版墽琛屾瀯寤哄拰閮ㄧ讲鑴氭湰锛岀‘淇濈珯鍐呴摼鎺ャ€乣robots.txt`銆乣sitemap.xml` 閮戒娇鐢ㄦ柊鍩熷悕銆?
-### 6. 濡備綍鍒犻櫎鏃ч厤缃?
-濡傛灉浣犲悗闈笉鍐嶄娇鐢ㄦ煇涓棫鍩熷悕锛屽缓璁寜杩欎釜椤哄簭娓呯悊锛?
-1. 鍏堝湪 DNS 绠＄悊鍚庡彴鍒犻櫎鏃у煙鍚嶅搴旂殑 `A` 璁板綍鍜?`CNAME` 璁板綍銆?2. 濡傛灉浣跨敤浜?Cloudflare锛屽啀鎶婃棫鍩熷悕浠?Cloudflare 涓Щ闄わ紝鎴栬嚦灏戝彇娑堜唬鐞嗗拰瑙ｆ瀽璁板綍銆?3. 鍦?VPS 鐨勯儴缃茶剼鏈噷鎶?`DOMAIN`銆乣WWW_DOMAIN`銆乣BASE_URL` 鏀规垚鏂扮殑鍊硷紝閬垮厤鍚屾鑴氭湰缁х画鐢熸垚鏃ч摼鎺ャ€?4. 濡傛灉鏃у煙鍚嶅凡缁忎笉鍐嶉渶瑕侊紝涔熷彲浠ラ『鎵嬪垹闄ゆ湇鍔″櫒涓婃棫绔欑偣閰嶇疆鍜岃瘉涔︼紝浣嗚繖涓€姝ヨ纭鏂板煙鍚嶅凡缁忔甯稿彲鐢ㄥ悗鍐嶅仛銆?
-## 閫氳繃 Cloudflare 鎵樼鍩熷悕
+### 3. 先关闭代理，再等证书签发
 
-杩欓噷鐨勨€滈€氳繃 Cloudflare 鎵樼鍩熷悕鈥濇寚鐨勬槸鎶婂煙鍚嶇殑 DNS 浜ょ粰 Cloudflare 绠＄悊锛岃€屼笉鏄妸绔欑偣杩佸埌 Cloudflare Pages銆?
-### 1. 鎶婂煙鍚嶆帴鍏?Cloudflare
+如果你使用的是 Cloudflare 或类似带代理的 DNS 服务，建议先把解析状态设成 `DNS only`，不要先开代理：
 
-1. 鍦?Cloudflare 娣诲姞浣犵殑鍩熷悕銆?2. 鍒板煙鍚嶆敞鍐屽晢鍚庡彴锛屾妸 NS 璁板綍鏀规垚 Cloudflare 鎻愪緵鐨勪袱鏉″悕绉版湇鍔″櫒銆?3. 绛夊煙鍚嶇姸鎬佸彉鎴?`Active` 鍚庯紝鍐嶇户缁笅涓€姝ャ€?
-### 2. 鍦?Cloudflare 閲岄厤缃В鏋?
-濡傛灉浣犵户缁娇鐢ㄥ綋鍓嶄粨搴撴彁渚涚殑 `Debian VPS + Nginx` 閮ㄧ讲鏂瑰紡锛屽缓璁繖鏍烽厤锛?
-- `A` 璁板綍锛歚@` 鎸囧悜 VPS 鍏綉 IP
-- `CNAME` 璁板綍锛歚www` 鎸囧悜 `@`
+- 原因是首次签发 HTTPS 证书时，服务器需要直接验证域名是否能解析到 VPS
+- 等证书签发成功、站点能正常访问后，再按需开启代理
 
-寤鸿鍏堟妸璁板綍璁句负 `DNS only`锛岀瓑 HTTPS 璇佷功姝ｅ父绛惧彂鍚庯紝鍐嶆寜闇€瑕佸紑鍚?Cloudflare 浠ｇ悊銆?
-### 3. 閰嶇疆 SSL/TLS
+### 4. SSL/TLS 设置
 
-- Cloudflare 闈㈡澘閲屾妸 `SSL/TLS` 妯″紡璁句负 `Full` 鎴?`Full (strict)`
-- 濡傛灉浣犱娇鐢ㄤ粨搴撹嚜甯︾殑 VPS 鑴氭湰绛惧彂璇佷功锛屽厛纭繚 `A` 璁板綍宸茬粡鐢熸晥
-- 濡傛灉璇佷功绛惧彂澶辫触锛屼紭鍏堟鏌ワ細
-  - 鍩熷悕鏄惁宸茬粡姝ｇ‘瑙ｆ瀽鍒?VPS
-  - Cloudflare 浠ｇ悊鏄惁褰卞搷浜?HTTP 楠岃瘉
-  - Nginx 鏄惁鍙互鐩存帴璁块棶绔欑偣鏍圭洰褰?
-## Debian VPS 閮ㄧ讲
+如果你使用 Cloudflare 托管 DNS：
 
-濡傛灉浣犺鎶婄珯鐐归儴缃插埌 `257823.xyz` 鍜屼竴鍙?Debian VPS锛屼笂绾挎祦绋嬪敖閲忚嚜鍔ㄥ寲銆?
-鍓嶆彁鍙渶瑕佷竴椤癸細
+- `SSL/TLS` 模式设为 `Full` 或 `Full (strict)`
+- 如果 VPS 上已经成功签发了证书，优先使用 `Full (strict)`
 
-- 鎶?`257823.xyz` 鍜?`www.257823.xyz` 鐨?`A` 璁板綍鎸囧悜 VPS IP
+如果你只是使用普通注册商 DNS，不需要额外配置 Cloudflare 的 SSL 模式，直接让 VPS 上的 `certbot` 签发证书即可。
 
-鐒跺悗鍦?VPS 涓婄洿鎺ユ墽琛岋細
+### 5. 域名切换时要同步修改源码
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/koajsj/orianblog/main/deploy/debian/bootstrap.sh | sudo bash
-```
+如果你把站点从默认域名切换到自己的域名，需要同时修改这两个位置：
 
-杩欎釜鑴氭湰浼氳嚜鍔ㄥ畬鎴愶細
+- `deploy/debian/bootstrap.sh` 里的 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL`
+- `tools/site.mjs` 生成的站内链接和站点地址
 
-- 瀹夎 `git`銆乣nginx`銆乣nodejs`銆乣npm`銆乣certbot`
-- 鍏嬮殕浠撳簱鍒?`/var/www/257823.xyz/html`
-- 杩愯 `npm run build`
-- 鑷姩鐢熸垚 `robots.txt` 鍜?`sitemap.xml`
-- 閰嶇疆 `Nginx`
-- 鍚姩 `systemd` 瀹氭椂鍚屾
-- 灏濊瘯鑷姩绛惧彂 `HTTPS` 璇佷功
+改完后重新执行构建和部署脚本，确保站内链接、`robots.txt`、`sitemap.xml` 都使用新域名。
 
-閮ㄧ讲瀹屾垚鍚庯紝鏈嶅姟鍣ㄤ細姣?5 鍒嗛挓鑷姩鎷夊彇 GitHub 鏈€鏂颁唬鐮佸苟鍒锋柊绔欑偣銆?
-濡傛灉浣犳兂绔嬪埢鎵嬪姩瑙﹀彂涓€娆″悓姝ワ紝鍙渶瑕佽繍琛岋細
+### 6. 如何删除旧配置
 
-```bash
-sudo systemctl start orianblog-sync.service
-```
+如果你后面不再使用某个旧域名，建议按这个顺序清理：
 
-濡傛灉璇佷功绛惧彂澶辫触锛岄€氬父鏄煙鍚嶈В鏋愯繕娌℃湁鐢熸晥銆傜瓑 `A` 璁板綍鐢熸晥鍚庯紝鍐嶆墽琛屼竴娆′笂闈㈢殑鍚屾鍛戒护鍗冲彲銆?
+1. 先在 DNS 管理后台删除旧域名对应的 `A` 记录和 `CNAME` 记录。
+2. 如果使用了 Cloudflare，再把旧域名从 Cloudflare 中移除，或至少取消代理和解析记录。
+3. 在 VPS 的部署脚本里把 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL` 改成新的值，避免同步脚本继续生成旧链接。
+4. 如果旧域名已经不再需要，也可以顺手删除服务器上旧站点配置和证书，但这一步要确认新域名已经正常可用后再做。
+
 ### VPS 里怎么删
 
 如果你要把这套站点从 VPS 上彻底删除，建议按下面顺序执行，先停同步，再删站点文件和证书，最后清理 Nginx 配置。
@@ -154,7 +137,70 @@ sudo certbot delete --cert-name 257823.xyz
 
 如果你后面还要在同一台 VPS 上部署新域名，只需要保留 `git`、`nginx`、`nodejs`、`npm`、`certbot`，把脚本里的 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL` 改成新值，再重新部署即可。
 
-## 鏁版嵁璇存槑
+## 通过 Cloudflare 托管域名
 
-- 娴忚閲忋€佺偣璧炪€佹敹钘忥細瀛樺偍鍦ㄦ祻瑙堝櫒 `localStorage`
-- 璇勮锛氬綋鍓嶄负鏈湴璇勮锛屼笉渚濊禆鐧诲綍鎬?- `robots.txt` 鍜?`sitemap.xml`锛氱敱 `tools/site.mjs` 鑷姩鐢熸垚
+这里的“通过 Cloudflare 托管域名”指的是把域名的 DNS 交给 Cloudflare 管理，而不是把站点迁到 Cloudflare Pages。
+
+### 1. 把域名接入 Cloudflare
+
+1. 在 Cloudflare 添加你的域名。
+2. 到域名注册商后台，把 NS 记录改成 Cloudflare 提供的两条名称服务器。
+3. 等域名状态变成 `Active` 后，再继续下一步。
+
+### 2. 在 Cloudflare 里配置解析
+
+如果你继续使用当前仓库提供的 `Debian VPS + Nginx` 部署方式，建议这样配：
+
+- `A` 记录：`@` 指向 VPS 公网 IP
+- `CNAME` 记录：`www` 指向 `@`
+
+建议先把记录设为 `DNS only`，等 HTTPS 证书正常签发后，再按需要开启 Cloudflare 代理。
+
+### 3. 配置 SSL/TLS
+
+- Cloudflare 面板里把 `SSL/TLS` 模式设为 `Full` 或 `Full (strict)`
+- 如果你使用仓库自带的 VPS 脚本签发证书，先确保 `A` 记录已经生效
+- 如果证书签发失败，优先检查：
+  - 域名是否已经正确解析到 VPS
+  - Cloudflare 代理是否影响了 HTTP 验证
+  - Nginx 是否可以直接访问站点根目录
+
+## Debian VPS 部署
+
+如果你要把站点部署到 `257823.xyz` 和一台 Debian VPS，上线流程尽量自动化。
+
+前提只需要一项：
+
+- 把 `257823.xyz` 和 `www.257823.xyz` 的 `A` 记录指向 VPS IP
+
+然后在 VPS 上直接执行：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/koajsj/orianblog/main/deploy/debian/bootstrap.sh | sudo bash
+```
+
+这个脚本会自动完成：
+
+- 安装 `git`、`nginx`、`nodejs`、`npm`、`certbot`
+- 克隆仓库到 `/var/www/257823.xyz/html`
+- 运行 `npm run build`
+- 自动生成 `robots.txt` 和 `sitemap.xml`
+- 配置 `Nginx`
+- 启动 `systemd` 定时同步
+- 尝试自动签发 `HTTPS` 证书
+
+部署完成后，服务器会每 5 分钟自动拉取 GitHub 最新代码并刷新站点。
+
+如果你想立刻手动触发一次同步，只需要运行：
+
+```bash
+sudo systemctl start orianblog-sync.service
+```
+
+如果证书签发失败，通常是域名解析还没有生效。等 `A` 记录生效后，再执行一次上面的同步命令即可。
+
+## 数据说明
+
+- 浏览量、点赞、收藏：存储在浏览器 `localStorage`
+- 评论：当前为本地评论，不依赖登录态
+- `robots.txt` 和 `sitemap.xml`：由 `tools/site.mjs` 自动生成
