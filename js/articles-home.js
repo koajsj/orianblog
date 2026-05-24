@@ -85,6 +85,10 @@
         return utils.escapeHtml?.(value) ?? String(value ?? "");
     }
 
+    function toAbsoluteUrl(relativePath) {
+        return new URL(relativePath, window.location.href).toString();
+    }
+
     function getArticles() {
         return utils.getArticles?.() ?? [];
     }
@@ -115,7 +119,7 @@
     function getArticleLink(article) {
         const params = new URLSearchParams({ slug: article.slug });
         params.set("from", getView() === "archive" ? "articles" : "home");
-        return `article.html?${params.toString()}`;
+        return toAbsoluteUrl(`article.html?${params.toString()}`);
     }
 
     function getRankLabel(article, index) {

@@ -74,6 +74,10 @@
         return utils.escapeHtml?.(value) ?? String(value ?? "");
     }
 
+    function toAbsoluteUrl(relativePath) {
+        return new URL(relativePath, window.location.href).toString();
+    }
+
     function getSlug() {
         return new URLSearchParams(window.location.search).get("slug") || "";
     }
@@ -320,7 +324,7 @@
         }
 
         const source = getSource() === "articles" ? "articles" : "home";
-        const toHref = (slug) => `article.html?slug=${encodeURIComponent(slug)}&from=${source}`;
+        const toHref = (slug) => toAbsoluteUrl(`article.html?slug=${encodeURIComponent(slug)}&from=${source}`);
 
         return `
             <nav class="article-neighbors reveal" aria-label="Article navigation">
@@ -347,7 +351,7 @@
 
         const title = `${article.title} | ${tr("siteTitle")}`;
         const description = article.excerpt || `Read ${article.title} on ${tr("siteTitle")}.`;
-        const canonicalUrl = new URL(`article.html?slug=${encodeURIComponent(article.slug)}`, window.location.href).toString();
+        const canonicalUrl = toAbsoluteUrl(`article.html?slug=${encodeURIComponent(article.slug)}`);
         const canonicalLink = document.head.querySelector('link[rel="canonical"]');
 
         if (canonicalLink) {
@@ -662,13 +666,13 @@
 
         const source = getSource();
         if (source === "articles") {
-            backButton.setAttribute("href", "articles.html");
+            backButton.setAttribute("href", toAbsoluteUrl("articles.html"));
             backButton.setAttribute("aria-label", tr("backArticles"));
         } else if (source === "home") {
-            backButton.setAttribute("href", "index.html");
+            backButton.setAttribute("href", toAbsoluteUrl("index.html"));
             backButton.setAttribute("aria-label", tr("backHome"));
         } else {
-            backButton.setAttribute("href", "#");
+            backButton.setAttribute("href", toAbsoluteUrl("index.html"));
             backButton.setAttribute("aria-label", tr("backPrev"));
         }
 
@@ -677,18 +681,18 @@
         backButton.onclick = (event) => {
             event.preventDefault();
             if (source === "articles") {
-                window.location.href = "articles.html";
+                window.location.href = toAbsoluteUrl("articles.html");
                 return;
             }
             if (source === "home") {
-                window.location.href = "index.html";
+                window.location.href = toAbsoluteUrl("index.html");
                 return;
             }
             if (window.history.length > 1) {
                 window.history.back();
                 return;
             }
-            window.location.href = "index.html";
+            window.location.href = toAbsoluteUrl("index.html");
         };
     }
 
