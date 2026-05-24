@@ -58,122 +58,41 @@ node tools/site.mjs build --base-url=https://example.com/blog/
 5. 如果使用 GitHub Pages，推送后会自动发布。
 6. 如果使用 Debian VPS，服务器会按定时任务自动拉取并刷新站点。
 
-## 域名网站管理界面如何配置
+## 部署教程
 
-如果你已经有自己的域名，需要在域名注册商或 DNS 管理后台里做下面这些操作。这里的目标不是把站点改成别的平台，而是把域名解析到当前 VPS。
+这套站点的部署顺序是固定的：先把域名解析到 VPS，再在 VPS 上执行一键脚本，最后验证自动同步和证书是否正常。
 
-### 1. 进入域名的 DNS 管理页面
+### 1. 准备域名解析
 
-登录域名注册商后台，找到类似下面的入口：
+先在域名注册商或 DNS 管理后台打开解析设置，添加下面两条记录：
 
-- 域名管理
-- DNS 管理
-- 解析设置
-- 自定义解析
-
-### 2. 添加解析记录
-
-建议至少配置两条记录：
-
-- `A` 记录：主机记录填 `@`，记录值填你的 VPS 公网 IP
+- `A` 记录：主机记录填 `@`，记录值填 VPS 公网 IP
 - `CNAME` 记录：主机记录填 `www`，指向 `@`
 
-如果你的注册商不支持把 `www` 指向 `@`，也可以直接给 `www` 再加一条 `A` 记录，值同样填写 VPS 公网 IP。
+如果注册商不支持 `www` 指向 `@`，可以直接给 `www` 再加一条 `A` 记录。
 
-### 3. 先关闭代理，再等证书签发
+### 2. 如果使用 Cloudflare
 
-如果你使用的是 Cloudflare 或类似带代理的 DNS 服务，建议先把解析状态设成 `DNS only`，不要先开代理：
+如果你把 DNS 托管到 Cloudflare，先把域名接入 Cloudflare，再到注册商后台把 NS 记录改成 Cloudflare 提供的两条名称服务器。等状态变成 `Active` 后，再继续。
 
-- 原因是首次签发 HTTPS 证书时，服务器需要直接验证域名是否能解析到 VPS
-- 等证书签发成功、站点能正常访问后，再按需开启代理
+在 Cloudflare 面板里建议这样设置：
 
-### 4. SSL/TLS 设置
-
-如果你使用 Cloudflare 托管 DNS：
-
+- `A` 记录和 `CNAME` 记录先保持 `DNS only`
 - `SSL/TLS` 模式设为 `Full` 或 `Full (strict)`
-- 如果 VPS 上已经成功签发了证书，优先使用 `Full (strict)`
+- 等 VPS 证书签发成功后，再按需开启代理
 
-如果你只是使用普通注册商 DNS，不需要额外配置 Cloudflare 的 SSL 模式，直接让 VPS 上的 `certbot` 签发证书即可。
+### 3. 修改仓库里的域名配置
 
-### 5. 域名切换时要同步修改源码
-
-如果你把站点从默认域名切换到自己的域名，需要同时修改这两个位置：
+如果你不是部署到默认示例域名，需要同时修改这两个位置：
 
 - `deploy/debian/bootstrap.sh` 里的 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL`
-- `tools/site.mjs` 生成的站内链接和站点地址
+- `tools/site.mjs` 里默认的站点基础地址
 
-改完后重新执行构建和部署脚本，确保站内链接、`robots.txt`、`sitemap.xml` 都使用新域名。
+改完后重新构建，确保站内链接、`robots.txt` 和 `sitemap.xml` 都使用新域名。
 
-### 6. 如何删除旧配置
+### 4. 在 VPS 上执行部署
 
-如果你后面不再使用某个旧域名，建议按这个顺序清理：
-
-1. 先在 DNS 管理后台删除旧域名对应的 `A` 记录和 `CNAME` 记录。
-2. 如果使用了 Cloudflare，再把旧域名从 Cloudflare 中移除，或至少取消代理和解析记录。
-3. 在 VPS 的部署脚本里把 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL` 改成新的值，避免同步脚本继续生成旧链接。
-4. 如果旧域名已经不再需要，也可以顺手删除服务器上旧站点配置和证书，但这一步要确认新域名已经正常可用后再做。
-
-### VPS 里怎么删
-
-如果你要把这套站点从 VPS 上彻底删除，建议按下面顺序执行，先停同步，再删站点文件和证书，最后清理 Nginx 配置。
-
-```bash
-sudo systemctl stop orianblog-sync.timer
-sudo systemctl stop orianblog-sync.service
-sudo systemctl disable orianblog-sync.timer
-sudo rm -f /etc/systemd/system/orianblog-sync.service
-sudo rm -f /etc/systemd/system/orianblog-sync.timer
-sudo systemctl daemon-reload
-sudo rm -f /etc/nginx/sites-enabled/orianblog.conf
-sudo rm -f /etc/nginx/sites-available/orianblog.conf
-sudo nginx -t
-sudo systemctl reload nginx
-sudo rm -rf /var/www/257823.xyz/html
-sudo certbot delete --cert-name 257823.xyz
-```
-
-如果 `certbot delete` 提示证书名不匹配，先运行 `sudo certbot certificates`，确认实际证书名称后再删。
-
-如果你后面还要在同一台 VPS 上部署新域名，只需要保留 `git`、`nginx`、`nodejs`、`npm`、`certbot`，把脚本里的 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL` 改成新值，再重新部署即可。
-
-## 通过 Cloudflare 托管域名
-
-这里的“通过 Cloudflare 托管域名”指的是把域名的 DNS 交给 Cloudflare 管理，而不是把站点迁到 Cloudflare Pages。
-
-### 1. 把域名接入 Cloudflare
-
-1. 在 Cloudflare 添加你的域名。
-2. 到域名注册商后台，把 NS 记录改成 Cloudflare 提供的两条名称服务器。
-3. 等域名状态变成 `Active` 后，再继续下一步。
-
-### 2. 在 Cloudflare 里配置解析
-
-如果你继续使用当前仓库提供的 `Debian VPS + Nginx` 部署方式，建议这样配：
-
-- `A` 记录：`@` 指向 VPS 公网 IP
-- `CNAME` 记录：`www` 指向 `@`
-
-建议先把记录设为 `DNS only`，等 HTTPS 证书正常签发后，再按需要开启 Cloudflare 代理。
-
-### 3. 配置 SSL/TLS
-
-- Cloudflare 面板里把 `SSL/TLS` 模式设为 `Full` 或 `Full (strict)`
-- 如果你使用仓库自带的 VPS 脚本签发证书，先确保 `A` 记录已经生效
-- 如果证书签发失败，优先检查：
-  - 域名是否已经正确解析到 VPS
-  - Cloudflare 代理是否影响了 HTTP 验证
-  - Nginx 是否可以直接访问站点根目录
-
-## Debian VPS 部署
-
-如果你要把站点部署到 `257823.xyz` 和一台 Debian VPS，上线流程尽量自动化。
-
-前提只需要一项：
-
-- 把 `257823.xyz` 和 `www.257823.xyz` 的 `A` 记录指向 VPS IP
-
-然后在 VPS 上直接执行：
+前提确认 `257823.xyz` 和 `www.257823.xyz` 已经解析到 VPS 以后，直接在 Debian VPS 上执行：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/koajsj/orianblog/main/deploy/debian/bootstrap.sh | sudo bash
@@ -191,6 +110,8 @@ curl -fsSL https://raw.githubusercontent.com/koajsj/orianblog/main/deploy/debian
 
 部署完成后，服务器会每 5 分钟自动拉取 GitHub 最新代码并刷新站点。
 
+### 5. 验证部署
+
 如果你想立刻手动触发一次同步，只需要运行：
 
 ```bash
@@ -198,6 +119,18 @@ sudo systemctl start orianblog-sync.service
 ```
 
 如果证书签发失败，通常是域名解析还没有生效。等 `A` 记录生效后，再执行一次上面的同步命令即可。
+
+### 6. 删除旧配置
+
+如果你后面不再使用旧域名，先删除 DNS 记录，再清理 VPS 上的站点配置和证书。
+
+```bash
+sudo bash -lc 'systemctl stop orianblog-sync.timer orianblog-sync.service; systemctl disable orianblog-sync.timer; rm -f /etc/systemd/system/orianblog-sync.service /etc/systemd/system/orianblog-sync.timer; systemctl daemon-reload; rm -f /etc/nginx/sites-enabled/orianblog.conf /etc/nginx/sites-available/orianblog.conf; nginx -t && systemctl reload nginx; rm -rf /var/www/257823.xyz/html; certbot delete --cert-name 257823.xyz'
+```
+
+如果 `certbot delete` 提示证书名不匹配，先运行 `sudo certbot certificates`，确认实际证书名称后再删。
+
+如果你后面还要在同一台 VPS 上部署新域名，只需要保留 `git`、`nginx`、`nodejs`、`npm`、`certbot`，把脚本里的 `DOMAIN`、`WWW_DOMAIN`、`BASE_URL` 改成新值，再重新部署即可。
 
 ## 数据说明
 
