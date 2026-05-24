@@ -21,7 +21,6 @@
     const navActions = document.querySelector(".nav-actions");
 
     let revealObserver = null;
-    let clockTimer = null;
     let controlsMounted = false;
 
     function isReducedMotion() {
@@ -52,22 +51,12 @@
         return body.classList.contains("theme-dark") ? "dark" : "light";
     }
 
-    function formatClock() {
-        const formatter = new Intl.DateTimeFormat(utils.getLocale?.() || "en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        });
-        return formatter.format(new Date());
-    }
-
     function getLabels() {
         const lang = utils.getLanguage?.() || "en";
         const isDark = getCurrentTheme() === "dark";
 
         if (lang === "zh") {
             return {
-                clock: "当前时间",
                 language: "切换到英文",
                 languageText: "EN",
                 theme: isDark ? "切换到浅色模式" : "切换到深色模式"
@@ -75,7 +64,6 @@
         }
 
         return {
-            clock: "Current time",
             language: "Switch to Chinese",
             languageText: "中",
             theme: isDark ? "Switch to light mode" : "Switch to dark mode"
@@ -99,9 +87,6 @@
         shell.className = "nav-utilities";
         shell.setAttribute("data-global-controls", "true");
 
-        const clock = document.createElement("span");
-        clock.className = "nav-clock";
-
         const languageToggle = document.createElement("button");
         languageToggle.type = "button";
         languageToggle.className = "language-toggle";
@@ -112,8 +97,6 @@
 
         const syncControls = () => {
             const labels = getLabels();
-            clock.textContent = formatClock();
-            clock.setAttribute("aria-label", labels.clock);
             languageToggle.textContent = labels.languageText;
             languageToggle.setAttribute("aria-label", labels.language);
             themeToggle.setAttribute("aria-label", labels.theme);
@@ -137,16 +120,12 @@
             syncControls();
         });
 
-        shell.append(clock, languageToggle, themeToggle);
+        shell.append(languageToggle, themeToggle);
         navActions.prepend(shell);
         controlsMounted = true;
 
         applyTheme(resolvePreferredTheme());
         syncControls();
-
-        clockTimer = window.setInterval(() => {
-            clock.textContent = formatClock();
-        }, 15000);
 
         window.addEventListener("orian:languagechange", syncControls);
     }
@@ -247,11 +226,6 @@
         window.addEventListener("pagehide", () => {
             revealObserver?.disconnect();
             revealObserver = null;
-
-            if (clockTimer) {
-                window.clearInterval(clockTimer);
-                clockTimer = null;
-            }
         }, { once: true });
     }
 

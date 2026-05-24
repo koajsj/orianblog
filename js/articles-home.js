@@ -198,15 +198,29 @@
     }
 
     function updateDocumentMeta(isArchive) {
-        document.title = isArchive
+        const title = isArchive
             ? `${t("archiveTitle")} | ${t("siteTitle")}`
             : t("siteTitle");
-
         const description = isArchive ? t("archiveDesc") : t("siteDescription");
-        const descriptionNode = document.querySelector('meta[name="description"]');
-        if (descriptionNode) {
-            descriptionNode.setAttribute("content", description);
-        }
+
+        document.title = title;
+
+        const updateMeta = (selector, value) => {
+            if (!value) {
+                return;
+            }
+
+            const node = document.head.querySelector(selector);
+            if (node) {
+                node.setAttribute("content", value);
+            }
+        };
+
+        updateMeta('meta[name="description"]', description);
+        updateMeta('meta[property="og:title"]', title);
+        updateMeta('meta[property="og:description"]', description);
+        updateMeta('meta[name="twitter:title"]', title);
+        updateMeta('meta[name="twitter:description"]', description);
     }
 
     function updateStaticCopy() {

@@ -90,6 +90,24 @@
         }) ?? value ?? "";
     }
 
+    function sanitizeMediaUrl(value) {
+        const raw = String(value ?? "").trim();
+        if (!raw) {
+            return "";
+        }
+
+        try {
+            const url = new URL(raw, window.location.href);
+            if (["http:", "https:"].includes(url.protocol)) {
+                return url.toString();
+            }
+        } catch {
+            return "";
+        }
+
+        return "";
+    }
+
     function renderNotFound() {
         document.title = `${tr("notFound")} | ${tr("siteTitle")}`;
         if (progressBar) {
@@ -137,8 +155,14 @@
                             <h2>${tr("comments")}</h2>
                         </div>
                         <form class="comment-form" data-comment-form>
-                            <input type="text" name="author" maxlength="28" placeholder="${tr("yourName")}" required>
-                            <textarea name="content" maxlength="500" placeholder="${tr("writeComment")}" required></textarea>
+                            <label class="comment-field">
+                                <span class="sr-only">${tr("yourName")}</span>
+                                <input type="text" name="author" maxlength="28" placeholder="${tr("yourName")}" aria-label="${tr("yourName")}" autocomplete="name" required>
+                            </label>
+                            <label class="comment-field comment-field-textarea">
+                                <span class="sr-only">${tr("writeComment")}</span>
+                                <textarea name="content" maxlength="500" placeholder="${tr("writeComment")}" aria-label="${tr("writeComment")}" required></textarea>
+                            </label>
                             <button type="submit" class="comment-submit">${tr("postComment")}</button>
                         </form>
                         <div class="comment-list" data-comment-list></div>
@@ -170,6 +194,26 @@
             const id = `section-${slugify(text)}-${headingIndex}`;
             tocItems.push({ id, text, level });
             chunks.push(`<h${level} id="${id}">${escape(text)}</h${level}>`);
+        };
+
+        const pushImage = (line) => {
+            const match = line.match(/^!\[([^\]]*)\]\((.+)\)$/);
+            if (!match) {
+                return false;
+            }
+
+            const src = sanitizeMediaUrl(match[2]);
+            if (!src) {
+                return false;
+            }
+
+            const alt = match[1] || "";
+            chunks.push(`
+                <figure class="article-figure">
+                    <img src="${escape(src)}" alt="${escape(alt)}" loading="lazy" decoding="async">
+                </figure>
+            `);
+            return true;
         };
 
         const flushCode = () => {
@@ -210,6 +254,10 @@
 
             if (trimmed.startsWith("## ")) {
                 pushHeading(2, trimmed.replace(/^##\s+/, ""));
+                return;
+            }
+
+            if (pushImage(trimmed)) {
                 return;
             }
 
@@ -300,6 +348,11 @@
         const title = `${article.title} | ${tr("siteTitle")}`;
         const description = article.excerpt || `Read ${article.title} on ${tr("siteTitle")}.`;
         const canonicalUrl = new URL(`article.html?slug=${encodeURIComponent(article.slug)}`, window.location.href).toString();
+        const canonicalLink = document.head.querySelector('link[rel="canonical"]');
+
+        if (canonicalLink) {
+            canonicalLink.setAttribute("href", canonicalUrl);
+        }
 
         ensureMeta("name", "description", description);
         ensureMeta("property", "og:title", title);
@@ -571,7 +624,13 @@
                 || headings[0];
 
             tocLinks.forEach((link) => {
-                link.classList.toggle("is-active", link === linkMap.get(current.id));
+                const isActive = link === linkMap.get(current.id);
+                link.classList.toggle("is-active", isActive);
+                if (isActive) {
+                    link.setAttribute("aria-current", "true");
+                } else {
+                    link.removeAttribute("aria-current");
+                }
             });
         };
 
@@ -613,9 +672,7 @@
             backButton.setAttribute("aria-label", tr("backPrev"));
         }
 
-        if (backButton.childNodes.length > 0) {
-            backButton.childNodes[backButton.childNodes.length - 1].nodeValue = ` ${tr("backText")}`;
-        }
+        backButton.innerHTML = `<i class="fas fa-arrow-left" aria-hidden="true"></i> ${tr("backText")}`;
 
         backButton.onclick = (event) => {
             event.preventDefault();

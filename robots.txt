@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://koajsj.github.io/orianblog/sitemap.xml
